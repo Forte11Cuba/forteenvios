@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Forte Envíos · El Salvador → Cuba</title>
+  <meta name="description" content="Envía dinero y recargas de saldo desde El Salvador a Cuba. Calcula tu envío al instante." />
+  <meta name="theme-color" content="#1e3a5f" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <img src="logo.png" alt="Forte Envíos" class="logo" />
+      <a href="https://wa.me/50376528075" target="_blank" rel="noopener" class="wa-link">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+        <span class="wa-number">+503 7652-8075</span>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1>Envía dinero a Cuba<br/><span class="accent">rápido, seguro y sin complicaciones</span></h1>
+        <p class="lead">Desde El Salvador a Cuba</p>
+      </div>
+    </section>
+
+    <section class="calculator-wrap">
+      <div class="container">
+
+        <div class="tabs" role="tablist">
+          <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="envio">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            Envío de dinero
+          </button>
+          <button type="button" class="tab" role="tab" aria-selected="false" data-tab="saldo">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+            Saldo móvil
+          </button>
+        </div>
+
+        <!-- === Panel: Envío de dinero === -->
+        <div class="calculator card" id="panel-envio" role="tabpanel">
+          <div class="calc-header">
+            <h2>Calculadora de envío</h2>
+            <div class="rate-pill loading" id="ratePill" title="Tasa CUP/USD en vivo según El Toque">
+              <span class="rate-dot"></span>
+              <span id="rateText">Calculando tasa…</span>
+            </div>
+          </div>
+
+          <div class="row row-main">
+            <div class="field">
+              <label for="payUsd">Entrego en El Salvador</label>
+              <div class="input-group">
+                <input type="text" inputmode="decimal" id="payUsd" placeholder="0.00" autocomplete="off" />
+                <span class="currency">USD</span>
+              </div>
+              <small class="hint" id="feeHint">Comisión 7% incluida.</small>
+            </div>
+
+            <div class="row-divider" aria-hidden="true"></div>
+
+            <div class="field">
+              <label for="recvCup">Recibe en Cuba</label>
+              <div class="input-group">
+                <input type="text" inputmode="decimal" id="recvCup" placeholder="0" autocomplete="off" />
+                <span class="currency">CUP</span>
+              </div>
+              <small class="hint hint-right" id="recvUsdHint">≈ $0.00 USD</small>
+              <input type="hidden" id="recvUsd" />
+            </div>
+          </div>
+
+          <div class="info-note">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span>En Cuba se entrega por <strong>transferencia</strong> a tarjeta <strong>Bandec, BPA o Metro</strong>. Para <strong>efectivo</strong>, contáctanos por WhatsApp.</span>
+          </div>
+
+          <div class="summary" id="summary">
+            <div class="summary-row">
+              <span>Monto a entregar</span>
+              <strong id="sumPay">$0.00 USD</strong>
+            </div>
+            <div class="summary-row">
+              <span>Comisión (7%)</span>
+              <strong id="sumFee">$0.00 USD</strong>
+            </div>
+            <div class="summary-row sub">
+              <span>Monto equivalente a recibir en Cuba</span>
+              <strong id="sumRecvUsd">≈ $0.00 USD</strong>
+            </div>
+            <div class="summary-row highlight" id="sumRecvRow">
+              <span>Recibe en Cuba</span>
+              <strong id="sumRecv">0 CUP</strong>
+            </div>
+          </div>
+
+          <a id="whatsappBtn" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp" aria-disabled="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+            <span>Contactar por WhatsApp</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <p class="disclaimer">La tasa CUP/USD puede variar. El monto final se confirma al momento de coordinar el envío.</p>
+        </div>
+
+        <!-- === Panel: Saldo móvil === -->
+        <div class="calculator card hidden" id="panel-saldo" role="tabpanel">
+          <div class="calc-header">
+            <h2>Recarga de saldo móvil</h2>
+          </div>
+          <p class="panel-intro">Elige el paquete y envíanos el número de Cuba por WhatsApp.</p>
+
+          <div class="offers">
+            <button class="offer" data-cup="120" data-usd="2">
+              <span class="offer-cup">120 <small>CUP</small></span>
+              <span class="offer-arrow">→</span>
+              <span class="offer-usd">$2<small>.00</small></span>
+            </button>
+            <button class="offer" data-cup="240" data-usd="3">
+              <span class="offer-cup">240 <small>CUP</small></span>
+              <span class="offer-arrow">→</span>
+              <span class="offer-usd">$3<small>.00</small></span>
+            </button>
+            <button class="offer featured" data-cup="360" data-usd="3.7">
+              <span class="offer-badge">Mejor precio</span>
+              <span class="offer-cup">360 <small>CUP</small></span>
+              <span class="offer-arrow">→</span>
+              <span class="offer-usd">$3<small>.70</small></span>
+            </button>
+          </div>
+
+          <div class="field">
+            <label for="cubaPhone">Número de Cuba (opcional)</label>
+            <div class="input-group">
+              <span class="prefix">+53</span>
+              <input type="tel" inputmode="numeric" id="cubaPhone" placeholder="5XXX XXXX" autocomplete="off" maxlength="10" />
+            </div>
+            <small class="hint">Puedes compartirlo también por WhatsApp.</small>
+          </div>
+
+          <div class="info-note">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span>Recarga válida para líneas <strong>Cubacel</strong>. Pago en El Salvador por efectivo o Transfer365.</span>
+          </div>
+
+          <a id="whatsappSaldoBtn" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp" aria-disabled="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+            <span>Contactar por WhatsApp</span>
+            <span class="btn-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+
+        <div class="steps">
+          <h3>¿Cómo funciona?</h3>
+          <ol>
+            <li><strong>Calcula</strong> el monto o elige la recarga.</li>
+            <li><strong>Escríbenos</strong> por WhatsApp con los datos del destinatario.</li>
+            <li><strong>Pagas</strong> en El Salvador y tu familiar <strong>recibe en Cuba</strong>.</li>
+          </ol>
+        </div>
+
+        <section class="faq">
+          <h3>Preguntas frecuentes</h3>
+
+          <details>
+            <summary>¿Cuánto demora en llegar el dinero a Cuba?</summary>
+            <p><strong>Normalmente llega en pocas horas</strong> después de confirmado el pago. Pedimos un margen de hasta <strong>5 días</strong> solo para cubrir cualquier eventualidad.</p>
+          </details>
+
+          <details>
+            <summary>¿Cómo recibe mi familiar el dinero en Cuba?</summary>
+            <p>Para <strong>entrega por transferencia</strong>, solo necesitas el número de la tarjeta (<strong>Bandec, BPA o Metro</strong>) y, si lo deseas, un número de celular a confirmar. Para <strong>entrega en efectivo</strong>, contáctanos directamente por WhatsApp.</p>
+          </details>
+
+          <details>
+            <summary>¿Qué datos necesito del destinatario?</summary>
+            <p>Número de tarjeta (<strong>Bandec, BPA o Metro</strong>) y, si es posible, un número de contacto en Cuba.</p>
+          </details>
+
+          <details>
+            <summary>¿Cómo pago en El Salvador?</summary>
+            <p>Puedes pagar en <strong>efectivo</strong> o por <strong>Transfer365</strong>. Coordinamos la modalidad al momento de escribirnos por WhatsApp.</p>
+          </details>
+
+          <details>
+            <summary>¿Hay un monto mínimo o máximo?</summary>
+            <p>El mínimo es <strong>$1 USD</strong> y puedes enviar cualquier cantidad.</p>
+          </details>
+
+          <details>
+            <summary>¿De dónde sale la tasa de cambio?</summary>
+            <p>Usamos la tasa publicada por <a href="https://eltoque.com/tasas-de-cambio-cuba" target="_blank" rel="noopener"><strong>El Toque</strong></a>, la referencia más usada en Cuba para el mercado informal. Puedes verla siempre arriba de la calculadora. La tasa final se confirma al momento del envío.</p>
+          </details>
+
+          <details>
+            <summary>¿Entregan en efectivo en Cuba?</summary>
+            <p>Sí, en <strong>La Habana</strong>. El efectivo se puede entregar tanto en <strong>CUP</strong> como en <strong>USD</strong>. En esta modalidad la comisión puede variar entre <strong>7% y 10%</strong>, según la zona y el monto. Además se suma el <strong>costo de mensajería</strong>, que corre por cuenta del cliente. Para <strong>otras provincias</strong>, escríbenos por WhatsApp: también se puede coordinar.</p>
+          </details>
+        </section>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <img src="logo.png" alt="Forte Envíos" class="logo-sm" />
+      <span class="foot-copy">© <span id="year"></span> Forte Envíos · El Salvador</span>
+      <a href="https://wa.me/50376528075" target="_blank" rel="noopener" class="foot-wa">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
+        +503 7652-8075
+      </a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
