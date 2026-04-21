@@ -108,7 +108,7 @@
       el.ratePill.classList.add('stale');
       el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP · reintentando`;
     } else {
-      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP · El Toque`;
+      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP`;
     }
   }
 
