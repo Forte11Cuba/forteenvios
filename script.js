@@ -142,7 +142,7 @@
     const lines = [
       'Hola Forte, quiero hacer un envío a Cuba.',
       '',
-      `Entrego en El Salvador: $${fmtUsd(payUsd)} USD (de los cuales $${fmtUsd(feeUsd)} son comisión).`,
+      `Yo envío: $${fmtUsd(payUsd)} USD (de los cuales $${fmtUsd(feeUsd)} son comisión).`,
       `Mi familiar recibe en Cuba: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`,
       `Tasa aplicada: 1 USD = ${fmtCup(rate)} CUP (El Toque).`,
       '',
