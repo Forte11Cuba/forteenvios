@@ -457,6 +457,44 @@ a:hover { text-decoration: underline; }
 .foot-contact { display: flex; flex-direction: column; gap: 4px; font-size: 0.85rem; }
 .foot-contact a { color: #fff; font-weight: 600; }
 
+.foot-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.foot-social-label {
+  color: #cfd8e6;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.foot-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  transition: background .15s, border-color .15s, transform .1s;
+}
+.foot-social-link:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.28);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.foot-social-link svg { flex: 0 0 auto; }
+
 /* ===== Tabs ===== */
 .tabs {
   display: grid;
@@ -591,11 +629,22 @@ a:hover { text-decoration: underline; }
   font-size: 1rem;
   color: var(--navy);
 }
-.faq details {
+.faq-group { margin-top: 18px; }
+.faq-group:first-of-type { margin-top: 4px; }
+.faq-group h4 {
+  margin: 0 0 2px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+.faq-group > details {
   border-bottom: 1px solid var(--gray-light);
   padding: 10px 0;
 }
-.faq details:last-of-type { border-bottom: 0; }
+.faq-group > details:last-of-type { border-bottom: 0; }
 .faq summary {
   list-style: none;
   cursor: pointer;
@@ -623,6 +672,28 @@ a:hover { text-decoration: underline; }
   margin: 8px 0 4px;
   color: var(--text-soft);
   font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+/* Nested details (listas largas plegables dentro de una FAQ) */
+.faq-nested {
+  margin-top: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--gray-light);
+  border-radius: 10px;
+  padding: 6px 12px;
+}
+.faq-nested[open] { padding-bottom: 10px; }
+.faq-nested > summary {
+  font-size: 0.82rem;
+  color: var(--text-soft);
+  font-weight: 600;
+  padding: 4px 24px 4px 0;
+}
+.faq-nested > summary::after { font-size: 1.15rem; }
+.faq-nested > p {
+  margin: 6px 0 2px;
+  font-size: 0.84rem;
   line-height: 1.55;
 }
 
