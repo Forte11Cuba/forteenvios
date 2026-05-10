@@ -713,7 +713,7 @@ a:hover { text-decoration: underline; }
   .row-main .input-group .currency { padding: 0 14px; font-size: 0.85rem; }
 
   .tab { font-size: 1rem; padding: 12px 14px; }
-  .offers { grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .offers { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
   .offer { padding: 14px 16px; }
   .offer-cup, .offer-usd { font-size: 1.25rem; }
   .offer-arrow { font-size: 1.3rem; }
@@ -726,6 +726,7 @@ a:hover { text-decoration: underline; }
 @media (min-width: 960px) {
   .hero h1 { font-size: 2rem; }
   .card { padding: 32px 32px; }
+  .offers { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* Reduce motion */
