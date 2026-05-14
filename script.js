@@ -57,7 +57,7 @@
 
   const fmtCup = (n) => new Intl.NumberFormat('es-CU', {
     maximumFractionDigits: 0,
-  }).format(Math.round(n || 0));
+  }).format(Math.ceil(n || 0));
 
   const parseNum = (v) => {
     if (v == null) return 0;
@@ -172,7 +172,7 @@
   function recomputeFromPay() {
     if (!rateOk) return;
     const pay = parseNum(el.payUsd.value);
-    const net = pay / (1 + COMMISSION);
+    const net = Math.round(pay / (1 + COMMISSION) * 100) / 100;
     const fee = pay - net;
     const cup = net * rate;
 
