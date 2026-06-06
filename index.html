@@ -51,6 +51,54 @@
             </div>
           </div>
 
+          <div class="delivery-toggle" role="group" aria-label="Modalidad de entrega">
+            <button type="button" class="dtoggle active" data-mode="transferencia">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+              Transferencia
+            </button>
+            <button type="button" class="dtoggle" data-mode="efectivo">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              Efectivo en La Habana
+            </button>
+          </div>
+
+          <div id="efectivo-options" class="efectivo-options hidden">
+            <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
+              <span class="currency-toggle-label">Recibe en:</span>
+              <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
+              <button type="button" class="ctoggle" data-currency="usd">USD</button>
+            </div>
+            <div class="municipio-section">
+              <label for="municipioSelect" class="municipio-label">Municipio de entrega</label>
+              <select id="municipioSelect" class="municipio-select">
+                <option value="">— Selecciona un municipio —</option>
+                <optgroup label="Mensajería $5 USD">
+                  <option value="Playa|5">Playa</option>
+                  <option value="Centro Habana|5">Centro Habana</option>
+                  <option value="La Habana Vieja|5">La Habana Vieja</option>
+                  <option value="Plaza de la Revolución|5">Plaza de la Revolución</option>
+                </optgroup>
+                <optgroup label="Mensajería $7 USD">
+                  <option value="Arroyo Naranjo|7">Arroyo Naranjo</option>
+                  <option value="Boyeros|7">Boyeros</option>
+                  <option value="Diez de Octubre|7">Diez de Octubre</option>
+                  <option value="Marianao|7">Marianao</option>
+                </optgroup>
+                <optgroup label="Mensajería $10 USD">
+                  <option value="Cerro|10">Cerro</option>
+                  <option value="La Lisa|10">La Lisa</option>
+                  <option value="San Miguel del Padrón|10">San Miguel del Padrón</option>
+                </optgroup>
+                <optgroup label="Mensajería $12 USD">
+                  <option value="Cotorro|12">Cotorro</option>
+                  <option value="Guanabacoa|12">Guanabacoa</option>
+                  <option value="La Habana del Este|12">La Habana del Este</option>
+                  <option value="Regla|12">Regla</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+
           <div class="row row-main">
             <div class="field">
               <label for="payUsd">Yo envío</label>
@@ -64,10 +112,10 @@
             <div class="row-divider" aria-hidden="true"></div>
 
             <div class="field">
-              <label for="recvCup">Recibe en Cuba</label>
+              <label for="recvCup" id="recvCupLabel">Recibe en Cuba</label>
               <div class="input-group">
                 <input type="text" inputmode="decimal" id="recvCup" placeholder="0" autocomplete="off" />
-                <span class="currency">CUP</span>
+                <span class="currency" id="recvCupCurrency">CUP</span>
               </div>
               <small class="hint hint-right" id="recvUsdHint">≈ $0.00 USD</small>
               <input type="hidden" id="recvUsd" />
@@ -80,15 +128,19 @@
               <strong id="sumPay">$0.00 USD</strong>
             </div>
             <div class="summary-row">
-              <span>Comisión (7%)</span>
+              <span id="sumFeeLabel">Comisión (7%)</span>
               <strong id="sumFee">$0.00 USD</strong>
             </div>
-            <div class="summary-row sub">
+            <div class="summary-row" id="sumMensajeriaRow" style="display:none">
+              <span>Mensajería en La Habana</span>
+              <strong id="sumMensajeria">$0.00 USD</strong>
+            </div>
+            <div class="summary-row sub" id="sumRecvUsdRow">
               <span>Monto equivalente <span class="wrap-mobile">a recibir en Cuba</span></span>
               <strong id="sumRecvUsd">≈ $0.00 USD</strong>
             </div>
             <div class="summary-row highlight" id="sumRecvRow">
-              <span>Recibe en Cuba</span>
+              <span id="sumRecvLabel">Recibe en Cuba</span>
               <strong id="sumRecv">0 CUP</strong>
             </div>
           </div>
@@ -239,7 +291,20 @@
 
             <details>
               <summary>¿Entregan en efectivo en Cuba?</summary>
-              <p>Sí, en <strong>La Habana</strong>. El efectivo se puede entregar tanto en <strong>CUP</strong> como en <strong>USD</strong>. En esta modalidad la comisión puede variar entre <strong>7% y 10%</strong>. Además se suma el <strong>costo de mensajería</strong>, que corre por cuenta del cliente. Para <strong>otras provincias</strong>, escríbenos por WhatsApp, también se puede coordinar.</p>
+              <p>Sí, en <strong>La Habana</strong>. El efectivo se entrega en <strong>CUP</strong> (comisión 7%) o en <strong>USD</strong> (comisión 10%). Además se cobra una <strong>tarifa de mensajería</strong> según el municipio:</p>
+              <ul>
+                <li><strong>$5 USD:</strong> Playa, Centro Habana, La Habana Vieja, Plaza de la Revolución</li>
+                <li><strong>$7 USD:</strong> Arroyo Naranjo, Boyeros, Diez de Octubre, Marianao</li>
+                <li><strong>$10 USD:</strong> Cerro, La Lisa, San Miguel del Padrón</li>
+                <li><strong>$12 USD:</strong> Cotorro, Guanabacoa, La Habana del Este, Regla</li>
+              </ul>
+              <p>Puedes calcular el costo total en la calculadora seleccionando <strong>"Efectivo en La Habana"</strong>. Para <strong>otras provincias</strong>, escríbenos por WhatsApp y lo coordinamos.</p>
+            </details>
+
+            <details>
+              <summary>¿Qué pasa si el monto en USD no es un número exacto?</summary>
+              <p>Siempre intentamos entregar la mayor cantidad posible en <strong>billetes USD</strong>. Sin embargo, los billetes tienen denominaciones fijas, por lo que si el monto a entregar no es múltiplo exacto de <strong>$5 USD</strong>, el sobrante se entrega en <strong>CUP al cambio vigente en el momento de la entrega</strong>.</p>
+              <p>Por ejemplo: si corresponden <strong>$11.50 USD</strong>, se entregará <strong>$10 USD en efectivo</strong> y el equivalente de <strong>$1.50 USD en CUP</strong> según la tasa del día. Así tu familiar recibe el 100% del valor, sin perder nada.</p>
             </details>
 
             <details>

@@ -2,32 +2,44 @@
   'use strict';
 
   const COMMISSION = 0.07;
+  const COMMISSION_USD_CASH = 0.10;
   const WHATSAPP_NUMBER = '50376528075';
   const RATE_ENDPOINT = 'https://api.yadio.io/rate/CUP/USD';
   const RATE_TTL_MS = 3 * 60 * 1000;
   const RETRY_MS = 8 * 1000;
 
   const el = {
-    payUsd: document.getElementById('payUsd'),
-    recvCup: document.getElementById('recvCup'),
-    recvUsd: document.getElementById('recvUsd'),
-    recvUsdHint: document.getElementById('recvUsdHint'),
-    feeHint: document.getElementById('feeHint'),
-    ratePill: document.getElementById('ratePill'),
-    rateText: document.getElementById('rateText'),
-    sumPay: document.getElementById('sumPay'),
-    sumFee: document.getElementById('sumFee'),
-    sumRecv: document.getElementById('sumRecv'),
-    sumRecvUsd: document.getElementById('sumRecvUsd'),
-    sumRecvRow: document.getElementById('sumRecvRow'),
-    whatsappBtn: document.getElementById('whatsappBtn'),
-    whatsappSaldoBtn: document.getElementById('whatsappSaldoBtn'),
-    cubaPhone: document.getElementById('cubaPhone'),
-    year: document.getElementById('year'),
-    tabs: document.querySelectorAll('.tab'),
-    panelEnvio: document.getElementById('panel-envio'),
-    panelSaldo: document.getElementById('panel-saldo'),
-    offers: document.querySelectorAll('.offer'),
+    payUsd:          document.getElementById('payUsd'),
+    recvCup:         document.getElementById('recvCup'),
+    recvCupLabel:    document.getElementById('recvCupLabel'),
+    recvCupCurrency: document.getElementById('recvCupCurrency'),
+    recvUsd:         document.getElementById('recvUsd'),
+    recvUsdHint:     document.getElementById('recvUsdHint'),
+    feeHint:         document.getElementById('feeHint'),
+    ratePill:        document.getElementById('ratePill'),
+    rateText:        document.getElementById('rateText'),
+    sumPay:          document.getElementById('sumPay'),
+    sumFeeLabel:     document.getElementById('sumFeeLabel'),
+    sumFee:          document.getElementById('sumFee'),
+    sumMensajeriaRow:document.getElementById('sumMensajeriaRow'),
+    sumMensajeria:   document.getElementById('sumMensajeria'),
+    sumRecvUsdRow:   document.getElementById('sumRecvUsdRow'),
+    sumRecvUsd:      document.getElementById('sumRecvUsd'),
+    sumRecvRow:      document.getElementById('sumRecvRow'),
+    sumRecvLabel:    document.getElementById('sumRecvLabel'),
+    sumRecv:         document.getElementById('sumRecv'),
+    whatsappBtn:     document.getElementById('whatsappBtn'),
+    whatsappSaldoBtn:document.getElementById('whatsappSaldoBtn'),
+    cubaPhone:       document.getElementById('cubaPhone'),
+    year:            document.getElementById('year'),
+    tabs:            document.querySelectorAll('.tab'),
+    panelEnvio:      document.getElementById('panel-envio'),
+    panelSaldo:      document.getElementById('panel-saldo'),
+    offers:          document.querySelectorAll('.offer'),
+    dtoggleBtns:      document.querySelectorAll('.dtoggle'),
+    ctoggleBtns:      document.querySelectorAll('.ctoggle'),
+    municipioSelect:  document.getElementById('municipioSelect'),
+    efectivoOptions:  document.getElementById('efectivo-options'),
   };
 
   el.year.textContent = new Date().getFullYear();
@@ -45,7 +57,7 @@
     });
   });
 
-  /* ===== Envío de dinero ===== */
+  /* ===== Rate ===== */
   let rate = 0;
   let rateTimestamp = 0;
   let rateOk = false;
@@ -112,55 +124,170 @@
     }
   }
 
-  let lastRecvCup = 0;
-  function updateSummary(payUsd, feeUsd, recvCup) {
-    const netUsd = payUsd - feeUsd;
-    el.sumPay.textContent  = `$${fmtUsd(payUsd)} USD`;
-    el.sumFee.textContent  = `$${fmtUsd(feeUsd)} USD`;
-    el.sumRecv.textContent = `${fmtCup(recvCup)} CUP`;
-    el.sumRecvUsd.textContent = `≈ $${fmtUsd(netUsd)} USD`;
+  /* ===== Delivery mode state ===== */
+  let deliveryMode = 'transferencia'; // 'transferencia' | 'efectivo'
+  let efectivoCurrency = 'cup';       // 'cup' | 'usd'
+  let selectedMunicipio = null;       // { name, cost } or null
 
-    if (recvCup > 0 && Math.round(recvCup) !== Math.round(lastRecvCup)) {
-      el.sumRecvRow.classList.remove('flash');
-      void el.sumRecvRow.offsetWidth;
-      el.sumRecvRow.classList.add('flash');
+  const isEfectivoUsd = () => deliveryMode === 'efectivo' && efectivoCurrency === 'usd';
+
+  function getCommission() {
+    return isEfectivoUsd() ? COMMISSION_USD_CASH : COMMISSION;
+  }
+
+  function getMensajeria() {
+    return (deliveryMode === 'efectivo' && selectedMunicipio) ? selectedMunicipio.cost : 0;
+  }
+
+  function updateRecvFieldUI() {
+    if (isEfectivoUsd()) {
+      el.recvCupLabel.textContent = 'Recibe en efectivo';
+      el.recvCupCurrency.textContent = 'USD';
+      el.recvCup.placeholder = '0.00';
+    } else {
+      el.recvCupLabel.textContent = 'Recibe en Cuba';
+      el.recvCupCurrency.textContent = 'CUP';
+      el.recvCup.placeholder = '0';
     }
-    lastRecvCup = recvCup;
+  }
 
-    const canSend = rateOk && payUsd > 0.01;
+  /* ===== Delivery toggle ===== */
+  el.dtoggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      deliveryMode = btn.dataset.mode;
+      el.dtoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
+      el.efectivoOptions.classList.toggle('hidden', deliveryMode !== 'efectivo');
+      el.municipioSelect.value = '';
+      selectedMunicipio = null;
+      updateRecvFieldUI();
+      el.recvCup.value = '';
+      el.payUsd.value = '';
+      recomputeFromPay();
+    });
+  });
+
+  /* ===== Currency toggle (CUP / USD) ===== */
+  el.ctoggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      efectivoCurrency = btn.dataset.currency;
+      el.ctoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
+      updateRecvFieldUI();
+      recomputeFromPay();
+    });
+  });
+
+  /* ===== Municipio select ===== */
+  el.municipioSelect.addEventListener('change', () => {
+    const val = el.municipioSelect.value;
+    if (val) {
+      const [name, cost] = val.split('|');
+      selectedMunicipio = { name, cost: Number(cost) };
+    } else {
+      selectedMunicipio = null;
+    }
+    recomputeFromCurrent();
+  });
+
+  /* ===== Summary ===== */
+  let lastRecvValue = 0;
+
+  function updateSummary(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
+    const usdMode = isEfectivoUsd();
+    const netUsd = payUsd - feeUsd - mensajeriaUsd;
+
+    el.sumPay.textContent = `$${fmtUsd(payUsd)} USD`;
+
+    const pct = usdMode ? '10' : '7';
+    el.sumFeeLabel.textContent = `Comisión (${pct}%)`;
+    el.sumFee.textContent = `$${fmtUsd(feeUsd)} USD`;
+
+    if (mensajeriaUsd > 0) {
+      el.sumMensajeriaRow.style.display = '';
+      el.sumMensajeria.textContent = `$${fmtUsd(mensajeriaUsd)} USD`;
+    } else {
+      el.sumMensajeriaRow.style.display = 'none';
+    }
+
+    if (usdMode) {
+      const cupEquiv = (recvUsdCash || 0) * rate;
+      el.sumRecvUsd.textContent = recvUsdCash > 0 ? `≈ ${fmtCup(cupEquiv)} CUP` : '≈ 0 CUP';
+      el.sumRecvLabel.textContent = 'Recibe en efectivo';
+      const val = recvUsdCash || 0;
+      el.sumRecv.textContent = `$${fmtUsd(val)} USD`;
+      if (val > 0 && Math.round(val * 100) !== Math.round(lastRecvValue * 100)) {
+        el.sumRecvRow.classList.remove('flash');
+        void el.sumRecvRow.offsetWidth;
+        el.sumRecvRow.classList.add('flash');
+      }
+      lastRecvValue = val;
+    } else {
+      el.sumRecvUsd.textContent = netUsd > 0 ? `≈ $${fmtUsd(netUsd)} USD` : '≈ $0.00 USD';
+      el.sumRecvLabel.textContent = 'Recibe en Cuba';
+      const cup = recvCup || 0;
+      el.sumRecv.textContent = `${fmtCup(cup)} CUP`;
+      if (cup > 0 && Math.round(cup) !== Math.round(lastRecvValue)) {
+        el.sumRecvRow.classList.remove('flash');
+        void el.sumRecvRow.offsetWidth;
+        el.sumRecvRow.classList.add('flash');
+      }
+      lastRecvValue = cup;
+    }
+
+    const canSend = rateOk && payUsd > 0.01
+      && (deliveryMode === 'transferencia' || selectedMunicipio !== null);
+
     if (canSend) {
       el.whatsappBtn.removeAttribute('aria-disabled');
-      el.whatsappBtn.href = buildEnvioUrl(payUsd, feeUsd, recvCup);
+      el.whatsappBtn.href = buildEnvioUrl(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash);
     } else {
       el.whatsappBtn.setAttribute('aria-disabled', 'true');
       el.whatsappBtn.href = '#';
     }
   }
 
-  function buildEnvioUrl(payUsd, feeUsd, recvCup) {
-    const netUsd = payUsd - feeUsd;
-    const lines = [
-      'Hola Forte, quiero hacer un envío a Cuba.',
-      '',
-      `Yo envío: $${fmtUsd(payUsd)} USD (de los cuales $${fmtUsd(feeUsd)} son comisión).`,
-      `Mi familiar recibe en Cuba: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`,
-      `Tasa aplicada: 1 USD = ${fmtCup(rate)} CUP (El Toque).`,
-      '',
-      '¿Podemos coordinar?',
-    ];
+  function buildEnvioUrl(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
+    const lines = ['Hola Forte, quiero hacer un envío a Cuba.', ''];
+
+    if (deliveryMode === 'transferencia') {
+      const netUsd = payUsd - feeUsd;
+      lines.push('Modalidad: Transferencia a tarjeta (Bandec / BPA / Metro).');
+      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD (comisión $${fmtUsd(feeUsd)} – 7%).`);
+      lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`);
+      lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
+    } else if (efectivoCurrency === 'cup') {
+      const netUsd = payUsd - feeUsd - mensajeriaUsd;
+      lines.push('Modalidad: Efectivo en CUP en La Habana.');
+      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
+      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
+      lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP en efectivo (≈ $${fmtUsd(netUsd)} USD).`);
+      lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
+    } else {
+      lines.push('Modalidad: Efectivo en USD en La Habana.');
+      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
+      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 10%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
+      lines.push(`Mi familiar recibe: $${fmtUsd(recvUsdCash)} USD en efectivo.`);
+    }
+
+    lines.push('', '¿Podemos coordinar?');
     return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
   }
 
   let editing = null;
 
   function updateUsdHint(net) {
-    el.recvUsdHint.textContent = net > 0 ? `≈ $${fmtUsd(net)} USD` : '≈ $0.00 USD';
+    if (isEfectivoUsd()) {
+      const cup = net * rate;
+      el.recvUsdHint.textContent = cup > 0 ? `≈ ${fmtCup(cup)} CUP` : '≈ 0 CUP';
+    } else {
+      el.recvUsdHint.textContent = net > 0 ? `≈ $${fmtUsd(net)} USD` : '≈ $0.00 USD';
+    }
   }
 
   function updateFeeHint(fee) {
+    const pct = Math.round(getCommission() * 100);
     el.feeHint.textContent = fee > 0
-      ? `Incluye $${fmtUsd(fee)} de comisión (7%).`
-      : 'Comisión 7% incluida.';
+      ? `Incluye $${fmtUsd(fee)} de comisión (${pct}%).`
+      : `Comisión ${pct}% incluida.`;
   }
 
   function recomputeFromCurrent() {
@@ -172,31 +299,58 @@
   function recomputeFromPay() {
     if (!rateOk) return;
     const pay = parseNum(el.payUsd.value);
-    const net = Math.round(pay / (1 + COMMISSION) * 100) / 100;
-    const fee = pay - net;
-    const cup = net * rate;
+    const comm = getCommission();
+    const mensajeria = getMensajeria();
 
-    if (document.activeElement === el.payUsd) {
-      el.recvCup.value = cup > 0 ? fmtCup(cup) : '';
-    }
+    const payable = Math.max(pay - mensajeria, 0);
+    const net = Math.round(payable / (1 + comm) * 100) / 100;
+    const fee = payable - net;
+
     el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
     updateUsdHint(net);
     updateFeeHint(fee);
-    updateSummary(pay, fee, cup);
+
+    if (isEfectivoUsd()) {
+      if (editing !== 'cup') {
+        el.recvCup.value = net > 0 ? fmtUsd(net) : '';
+      }
+      updateSummary(pay, fee, mensajeria, null, net);
+    } else {
+      const cup = net * rate;
+      if (editing !== 'cup') {
+        el.recvCup.value = cup > 0 ? fmtCup(cup) : '';
+      }
+      updateSummary(pay, fee, mensajeria, cup, null);
+    }
   }
 
   function recomputeFromCup() {
     if (!rateOk) return;
-    const cup = parseNum(el.recvCup.value);
-    const net = cup / rate;
-    const pay = net * (1 + COMMISSION);
-    const fee = pay - net;
+    const comm = getCommission();
+    const mensajeria = getMensajeria();
+    let pay, net, fee, cup, recvUsdCash;
 
-    el.payUsd.value  = pay > 0 ? fmtUsd(pay) : '';
+    if (isEfectivoUsd()) {
+      recvUsdCash = parseNum(el.recvCup.value);
+      net = recvUsdCash;
+      const payable = net * (1 + comm);
+      pay = payable + mensajeria;
+      fee = payable - net;
+      cup = null;
+    } else {
+      cup = parseNum(el.recvCup.value);
+      net = cup / rate;
+      const payable = net * (1 + comm);
+      pay = payable + mensajeria;
+      fee = payable - net;
+      recvUsdCash = null;
+    }
+
+    el.payUsd.value = pay > 0 ? fmtUsd(pay) : '';
     el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
     updateUsdHint(net);
     updateFeeHint(fee);
-    updateSummary(pay, fee, cup);
+    updateSummary(pay, fee, mensajeria, cup, recvUsdCash);
   }
 
   function bind(inputEl, kind, fn) {
@@ -214,7 +368,7 @@
 
   setInputsEnabled(false);
   updateRatePill('loading');
-  updateSummary(0, 0, 0);
+  updateSummary(0, 0, 0, 0, null);
 
   fetchRate();
   setInterval(fetchRate, RATE_TTL_MS);
@@ -226,8 +380,7 @@
   let selectedOffer = null;
 
   function updateSaldoBtn() {
-    const hasOffer = !!selectedOffer;
-    if (hasOffer) {
+    if (selectedOffer) {
       el.whatsappSaldoBtn.removeAttribute('aria-disabled');
       el.whatsappSaldoBtn.href = buildSaldoUrl();
     } else {
