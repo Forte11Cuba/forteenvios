@@ -23,7 +23,7 @@
   <main>
     <section class="hero">
       <div class="container">
-        <h1>Envía dinero a Cuba<br/><span class="accent">rápido, seguro y sin complicaciones</span></h1>
+        <h1>Envía dinero a Cuba<br/><span class="accent">Rápido, seguro y sin complicaciones</span></h1>
       </div>
     </section>
 
@@ -57,21 +57,21 @@
               Transferencia
             </button>
             <button type="button" class="dtoggle" data-mode="efectivo">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M19 14V6c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg>
               Efectivo en La Habana
             </button>
           </div>
 
           <div id="efectivo-options" class="efectivo-options hidden">
             <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
-              <span class="currency-toggle-label">Recibe en:</span>
+              <span class="currency-toggle-label">Recibes en:</span>
               <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
               <button type="button" class="ctoggle" data-currency="usd">USD</button>
             </div>
             <div class="municipio-section">
               <label for="municipioSelect" class="municipio-label">Municipio de entrega</label>
               <select id="municipioSelect" class="municipio-select">
-                <option value="">— Selecciona un municipio —</option>
+                <option value="">Municipio</option>
                 <option value="Centro Habana|5">Centro Habana ($5)</option>
                 <option value="La Habana Vieja|5">La Habana Vieja ($5)</option>
                 <option value="Plaza de la Revolución|5">Plaza de la Revolución ($5)</option>
@@ -93,23 +93,21 @@
 
           <div class="row row-main">
             <div class="field">
-              <label for="payUsd">Yo envío</label>
+              <label for="payUsd">Entregas en El Salvador</label>
               <div class="input-group">
                 <input type="text" inputmode="decimal" id="payUsd" placeholder="0.00" autocomplete="off" />
                 <span class="currency">USD</span>
               </div>
-              <small class="hint" id="feeHint">Comisión 7% incluida.</small>
             </div>
 
             <div class="row-divider" aria-hidden="true"></div>
 
             <div class="field">
-              <label for="recvCup" id="recvCupLabel">Recibe en Cuba</label>
+              <label for="recvCup" id="recvCupLabel">Recibes en Cuba</label>
               <div class="input-group">
                 <input type="text" inputmode="decimal" id="recvCup" placeholder="0" autocomplete="off" />
                 <span class="currency" id="recvCupCurrency">CUP</span>
               </div>
-              <small class="hint hint-right" id="recvUsdHint">≈ $0.00 USD</small>
               <input type="hidden" id="recvUsd" />
             </div>
           </div>
@@ -132,7 +130,7 @@
               <strong id="sumRecvUsd">≈ $0.00 USD</strong>
             </div>
             <div class="summary-row highlight" id="sumRecvRow">
-              <span id="sumRecvLabel">Recibe en Cuba</span>
+              <span id="sumRecvLabel">Recibes en Cuba</span>
               <strong id="sumRecv">0 CUP</strong>
             </div>
           </div>

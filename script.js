@@ -11,11 +11,8 @@
   const el = {
     payUsd:          document.getElementById('payUsd'),
     recvCup:         document.getElementById('recvCup'),
-    recvCupLabel:    document.getElementById('recvCupLabel'),
     recvCupCurrency: document.getElementById('recvCupCurrency'),
     recvUsd:         document.getElementById('recvUsd'),
-    recvUsdHint:     document.getElementById('recvUsdHint'),
-    feeHint:         document.getElementById('feeHint'),
     ratePill:        document.getElementById('ratePill'),
     rateText:        document.getElementById('rateText'),
     sumPay:          document.getElementById('sumPay'),
@@ -26,7 +23,6 @@
     sumRecvUsdRow:   document.getElementById('sumRecvUsdRow'),
     sumRecvUsd:      document.getElementById('sumRecvUsd'),
     sumRecvRow:      document.getElementById('sumRecvRow'),
-    sumRecvLabel:    document.getElementById('sumRecvLabel'),
     sumRecv:         document.getElementById('sumRecv'),
     whatsappBtn:     document.getElementById('whatsappBtn'),
     whatsappSaldoBtn:document.getElementById('whatsappSaldoBtn'),
@@ -141,11 +137,9 @@
 
   function updateRecvFieldUI() {
     if (isEfectivoUsd()) {
-      el.recvCupLabel.textContent = 'Recibe en efectivo';
       el.recvCupCurrency.textContent = 'USD';
       el.recvCup.placeholder = '0.00';
     } else {
-      el.recvCupLabel.textContent = 'Recibe en Cuba';
       el.recvCupCurrency.textContent = 'CUP';
       el.recvCup.placeholder = '0';
     }
@@ -211,7 +205,6 @@
     if (usdMode) {
       const cupEquiv = (recvUsdCash || 0) * rate;
       el.sumRecvUsd.textContent = recvUsdCash > 0 ? `≈ ${fmtCup(cupEquiv)} CUP` : '≈ 0 CUP';
-      el.sumRecvLabel.textContent = 'Recibe en efectivo';
       const val = recvUsdCash || 0;
       el.sumRecv.textContent = `$${fmtUsd(val)} USD`;
       if (val > 0 && Math.round(val * 100) !== Math.round(lastRecvValue * 100)) {
@@ -222,7 +215,6 @@
       lastRecvValue = val;
     } else {
       el.sumRecvUsd.textContent = netUsd > 0 ? `≈ $${fmtUsd(netUsd)} USD` : '≈ $0.00 USD';
-      el.sumRecvLabel.textContent = 'Recibe en Cuba';
       const cup = recvCup || 0;
       el.sumRecv.textContent = `${fmtCup(cup)} CUP`;
       if (cup > 0 && Math.round(cup) !== Math.round(lastRecvValue)) {
@@ -251,20 +243,20 @@
     if (deliveryMode === 'transferencia') {
       const netUsd = payUsd - feeUsd;
       lines.push('Modalidad: Transferencia a tarjeta (Bandec / BPA / Metro).');
-      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD (comisión $${fmtUsd(feeUsd)} – 7%).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD (comisión $${fmtUsd(feeUsd)} – 7%).`);
       lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`);
       lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
     } else if (efectivoCurrency === 'cup') {
       const netUsd = payUsd - feeUsd - mensajeriaUsd;
       lines.push('Modalidad: Efectivo en CUP en La Habana.');
       lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
-      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
       lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP en efectivo (≈ $${fmtUsd(netUsd)} USD).`);
       lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
     } else {
       lines.push('Modalidad: Efectivo en USD en La Habana.');
       lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
-      lines.push(`Yo envío: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 10%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 10%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
       lines.push(`Mi familiar recibe: $${fmtUsd(recvUsdCash)} USD en efectivo.`);
     }
 
@@ -273,22 +265,6 @@
   }
 
   let editing = null;
-
-  function updateUsdHint(net) {
-    if (isEfectivoUsd()) {
-      const cup = net * rate;
-      el.recvUsdHint.textContent = cup > 0 ? `≈ ${fmtCup(cup)} CUP` : '≈ 0 CUP';
-    } else {
-      el.recvUsdHint.textContent = net > 0 ? `≈ $${fmtUsd(net)} USD` : '≈ $0.00 USD';
-    }
-  }
-
-  function updateFeeHint(fee) {
-    const pct = Math.round(getCommission() * 100);
-    el.feeHint.textContent = fee > 0
-      ? `Incluye $${fmtUsd(fee)} de comisión (${pct}%).`
-      : `Comisión ${pct}% incluida.`;
-  }
 
   function recomputeFromCurrent() {
     if (!rateOk) return;
@@ -307,8 +283,6 @@
     const fee = payable - net;
 
     el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
-    updateUsdHint(net);
-    updateFeeHint(fee);
 
     if (isEfectivoUsd()) {
       if (editing !== 'cup') {
@@ -348,8 +322,6 @@
 
     el.payUsd.value = pay > 0 ? fmtUsd(pay) : '';
     el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
-    updateUsdHint(net);
-    updateFeeHint(fee);
     updateSummary(pay, fee, mensajeria, cup, recvUsdCash);
   }
 
