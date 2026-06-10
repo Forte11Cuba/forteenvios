@@ -1122,10 +1122,49 @@ html { scroll-behavior: smooth; }
   color: var(--navy);
   margin: 22px 0 8px;
 }
+.article h3 {
+  font-size: 1.02rem;
+  color: var(--navy);
+  margin: 18px 0 6px;
+}
 .article p, .article ul, .article ol {
   color: var(--text);
   font-size: 0.95rem;
   line-height: 1.65;
+}
+.article figure {
+  margin: 14px 0;
+  text-align: center;
+}
+.article figure img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
+.article figcaption {
+  font-size: 0.78rem;
+  color: var(--text-soft);
+  margin-top: 6px;
+}
+.article .img-row {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.article .img-row figure {
+  flex: 1;
+  min-width: 220px;
+  margin: 14px 0 0;
+}
+.article .img-row figure img { max-height: 130px; width: auto; }
+.bank-logo {
+  display: block;
+  max-height: 170px;
+  max-width: 100%;
+  width: auto;
+  margin: 14px auto 10px;
 }
 .article-cta {
   margin-top: 26px;
