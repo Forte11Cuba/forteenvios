@@ -1176,6 +1176,14 @@ html { scroll-behavior: smooth; }
 }
 .info-box p { margin: 0 0 8px; font-size: 0.95rem; }
 .info-box ul { margin: 0; padding-left: 18px; }
+.article p a, .article ul a, .article ol a {
+  color: #1a6fb5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article p a:hover, .article ul a:hover, .article ol a:hover {
+  color: var(--navy-dark);
+}
 .article-cta {
   margin-top: 26px;
   padding: 16px;
