@@ -1166,6 +1166,16 @@ html { scroll-behavior: smooth; }
   width: auto;
   margin: 14px auto 10px;
 }
+.info-box {
+  margin: 20px 0;
+  padding: 16px 20px;
+  background: #f0faf4;
+  border: 1px solid #a8d5b8;
+  border-left: 4px solid #2e7d52;
+  border-radius: 10px;
+}
+.info-box p { margin: 0 0 8px; font-size: 0.95rem; }
+.info-box ul { margin: 0; padding-left: 18px; }
 .article-cta {
   margin-top: 26px;
   padding: 16px;
