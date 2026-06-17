@@ -1254,6 +1254,7 @@ html { scroll-behavior: smooth; }
 .dir-card-name a:hover { text-decoration: underline; }
 .dir-card-tag { font-size: 0.78rem; font-weight: 600; background: #eef6ff; color: #1a6fb5; border-radius: 20px; padding: 3px 10px; white-space: nowrap; }
 .dir-card-doctors { font-size: 0.88rem; color: var(--text-soft); margin: 0 0 12px; }
+.dir-card-flag { display: inline-block; font-size: 0.72rem; font-weight: 600; background: #fdeeec; color: #c0392b; border-radius: 20px; padding: 1px 8px; margin-left: 4px; white-space: nowrap; vertical-align: middle; }
 .dir-card-info { display: flex; flex-direction: column; gap: 6px; font-size: 0.88rem; color: var(--text); }
 .dir-card-row { display: flex; align-items: flex-start; gap: 8px; }
 .dir-card-row svg { flex-shrink: 0; margin-top: 1px; color: var(--navy-light); }
@@ -1268,6 +1269,7 @@ html { scroll-behavior: smooth; }
 .dir-card-link.wa { background: #25d366; color: #fff; }
 .dir-card-link.web { background: #eef6ff; color: #1a6fb5; border: 1px solid #cfe2f7; }
 .dir-card-link.ig { background: #f5f0ff; color: #7c3aed; border: 1px solid #ddd6fe; }
+.dir-card-link.fb { background: #eef3fc; color: #1877f2; border: 1px solid #d4e2fb; }
 .dir-card-logo { width: 70px; height: 70px; object-fit: contain; border-radius: 10px; flex-shrink: 0; }
 .dir-card-header { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
 .dir-card-header-text { flex: 1; min-width: 0; }
