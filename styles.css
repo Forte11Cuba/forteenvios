@@ -1270,6 +1270,7 @@ html { scroll-behavior: smooth; }
 .dir-card-link.web { background: #eef6ff; color: #1a6fb5; border: 1px solid #cfe2f7; }
 .dir-card-link.ig { background: #f5f0ff; color: #7c3aed; border: 1px solid #ddd6fe; }
 .dir-card-link.fb { background: #eef3fc; color: #1877f2; border: 1px solid #d4e2fb; }
+.dir-card-link.tel { background: #f0f4f4; color: #4b5563; border: 1px solid #d1d9d9; }
 .dir-card-logo { width: 70px; height: 70px; object-fit: contain; border-radius: 10px; flex-shrink: 0; }
 .dir-card-header { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
 .dir-card-header-text { flex: 1; min-width: 0; }
