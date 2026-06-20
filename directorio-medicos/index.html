@@ -168,6 +168,10 @@
             </div>
             <div class="dir-card-info">
               <div class="dir-card-row">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                <span><a href="https://maps.app.goo.gl/Pau7nBeezrqcH7m1A" target="_blank" rel="noopener">Hospital Rosales, San Salvador</a></span>
+              </div>
+              <div class="dir-card-row">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
                 <span>Lunes a viernes</span>
               </div>
@@ -185,11 +189,18 @@
             <div class="dir-card-header">
               <img src="pablorafael.jpg" alt="Dr. Pablo Rafael Remedios Abraham" class="dir-card-logo" />
               <div class="dir-card-header-text">
-                <div class="dir-card-title-row">
-                  <p class="dir-card-name"><a href="https://www.facebook.com/share/18sqmygfj1/" target="_blank" rel="noopener">Consultorio Cardiológico Laboratorio Soriano</a></p>
-                  <span class="dir-card-tag">Cardiología</span>
+                <div class="dir-card-title-row" style="align-items:flex-start">
+                  <div>
+                    <p class="dir-card-name"><a href="https://www.facebook.com/share/18sqmygfj1/" target="_blank" rel="noopener">Consultorio Cardiológico Laboratorio Soriano</a></p>
+                    <p class="dir-card-doctors">Dr. Pablo Rafael Remedios Abraham <span class="dir-card-flag">🇨🇺</span></p>
+                  </div>
+                  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+                    <span class="dir-card-tag">Cardiología</span>
+                    <span class="dir-card-tag">Medicina General Integral</span>
+                    <span class="dir-card-tag">Ecocardiografía</span>
+                    <span class="dir-card-tag">Metabolismo y Nutrición</span>
+                  </div>
                 </div>
-                <p class="dir-card-doctors">Dr. Pablo Rafael Remedios Abraham <span class="dir-card-flag">🇨🇺</span></p>
               </div>
             </div>
             <div class="dir-card-info">
@@ -258,23 +269,22 @@
             </div>
 
             <div class="dir-field">
-              <label for="especialidad">Especialidad</label>
-              <select id="especialidad" required>
-                <option value="" disabled selected>Selecciona una especialidad</option>
-                <option>Medicina general / Médico de familia</option>
-                <option>Pediatría</option>
-                <option>Ginecología y Obstetricia</option>
-                <option>Cardiología</option>
-                <option>Dermatología</option>
-                <option>Oftalmología</option>
-                <option>Odontología</option>
-                <option>Psicología / Psiquiatría</option>
-                <option>Ortopedia y Traumatología</option>
-                <option>Neurología</option>
-                <option>Medicina interna</option>
-                <option>Cirugía general</option>
-                <option>Otra</option>
-              </select>
+              <label>Especialidad <span style="font-size:.85rem;color:#6b7280">(puedes marcar varias)</span></label>
+              <div class="dir-checks">
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Medicina general / Médico de familia" /> Medicina general / Médico de familia</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Pediatría" /> Pediatría</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Ginecología y Obstetricia" /> Ginecología y Obstetricia</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Cardiología" /> Cardiología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Dermatología" /> Dermatología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Oftalmología" /> Oftalmología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Odontología" /> Odontología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Psicología / Psiquiatría" /> Psicología / Psiquiatría</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Ortopedia y Traumatología" /> Ortopedia y Traumatología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Neurología" /> Neurología</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Medicina interna" /> Medicina interna</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Cirugía general" /> Cirugía general</label>
+                <label class="dir-check"><input type="checkbox" name="especialidad" value="Otra" id="otraCheck" /> Otra</label>
+              </div>
             </div>
 
             <div class="dir-field" id="otraField" style="display:none">
@@ -372,8 +382,8 @@
       registro.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
 
-    document.getElementById('especialidad').addEventListener('change', function () {
-      document.getElementById('otraField').style.display = this.value === 'Otra' ? 'block' : 'none';
+    document.getElementById('otraCheck').addEventListener('change', function () {
+      document.getElementById('otraField').style.display = this.checked ? 'block' : 'none';
     });
 
     document.getElementById('dirForm').addEventListener('submit', function (e) {
@@ -381,9 +391,10 @@
       const nombre     = document.getElementById('nombre').value.trim();
       const clinica    = document.getElementById('clinica').value.trim();
       const principal  = document.getElementById('principal').options[document.getElementById('principal').selectedIndex].text;
-      const esp        = document.getElementById('especialidad').value;
+      const checkedEsps = [...document.querySelectorAll('input[name="especialidad"]:checked')].map(el => el.value);
+      if (!checkedEsps.length) { alert('Por favor selecciona al menos una especialidad.'); return; }
       const otraEsp    = document.getElementById('otraEsp').value.trim();
-      const especialidad = esp === 'Otra' && otraEsp ? otraEsp : esp;
+      const especialidad = checkedEsps.map(e => e === 'Otra' && otraEsp ? otraEsp : e).join(', ');
       const zona       = document.getElementById('zona').value.trim();
       const contacto   = document.getElementById('contacto').value.trim();
       const tipo       = document.getElementById('tipo').value;
