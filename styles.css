@@ -1313,6 +1313,30 @@ html { scroll-behavior: smooth; }
   object-fit: contain;
   border-radius: 8px;
 }
+.web-card-banner {
+  position: relative;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,.12);
+}
+.web-card-banner-img {
+  display: block;
+  width: 100%;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.web-card-banner .web-card-arrow {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: #fff;
+  opacity: 0.6;
+}
+.web-card:hover .web-card-banner .web-card-arrow {
+  opacity: 1;
+}
 .web-card-logo-text {
   display: inline-flex;
   align-items: center;
