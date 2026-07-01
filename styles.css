@@ -911,7 +911,7 @@ a:hover { text-decoration: underline; }
   font-size: 0.95rem;
 }
 .site-nav.open .nav-link:last-child { border-bottom: 0; }
-@media (min-width: 768px) {
+@media (min-width: 960px) {
   .site-nav {
     display: flex;
     align-items: center;
@@ -923,7 +923,7 @@ a:hover { text-decoration: underline; }
   .wa-number { display: none; }
 }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; overflow-y: scroll; }
 #calculadora, #faq, #contacto { scroll-margin-top: 72px; }
 
 /* ===== Guías ===== */
@@ -1100,6 +1100,7 @@ html { scroll-behavior: smooth; }
   border-radius: var(--radius);
   padding: 24px 20px;
 }
+.article > *:first-child { margin-top: 0; }
 .article-back {
   display: inline-block;
   font-size: 0.85rem;
@@ -1192,6 +1193,200 @@ html { scroll-behavior: smooth; }
   border-radius: 12px;
 }
 .article-cta p { margin: 0 0 10px; font-size: 0.92rem; }
+
+/* Trámites Cuba — lista de precios */
+.warn-box {
+  margin: 20px 0;
+  padding: 14px 18px;
+  background: #fff8ec;
+  border: 1px solid #f0d9a8;
+  border-left: 4px solid #e0a526;
+  border-radius: 10px;
+}
+.warn-box p { margin: 0; font-size: 0.92rem; line-height: 1.6; }
+.tramite-cat {
+  font-size: 1.05rem !important;
+  color: var(--navy) !important;
+  margin: 20px 0 8px !important;
+}
+.tramite-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.tramite-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  background: var(--gray-bg);
+  border: 1px solid var(--gray-light);
+  border-radius: 10px;
+  transition: background .15s, border-color .15s;
+}
+.tramite-row .t-name {
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+.tramite-row .t-price {
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 1rem;
+  white-space: nowrap;
+  min-width: 42px;
+  text-align: right;
+}
+.tramite-row.featured {
+  background: #eef6ff;
+  border-color: #cfe2f7;
+}
+.tramite-row.featured .t-price { color: var(--navy-light); }
+.t-badge {
+  flex-shrink: 0;
+  background: #e6f5ec;
+  color: #2e7d52;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.tramite-row.active {
+  background: #eef6ff;
+  border-color: #9cc4ec;
+}
+.tramite-note {
+  font-size: 0.82rem !important;
+  color: var(--text-soft) !important;
+  margin: 6px 0 0 !important;
+}
+
+/* Stepper de cantidad */
+.t-stepper {
+  display: inline-flex;
+  align-items: center;
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.t-stepper button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: var(--white);
+  color: var(--navy);
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s;
+}
+.t-stepper button:hover { background: var(--gray-bg); }
+.t-stepper button:active { background: #dde6f3; }
+.t-qty {
+  min-width: 28px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+  user-select: none;
+}
+
+/* Resumen de la solicitud */
+.tramite-summary {
+  margin-top: 18px;
+  padding: 18px 20px;
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.tramite-summary + .article { margin-top: 18px; }
+.tramite-summary-title {
+  font-size: 1.1rem;
+  color: var(--navy);
+  margin: 0 0 12px;
+}
+.tramite-summary-empty {
+  color: var(--text-soft);
+  font-size: 0.9rem;
+  margin: 0;
+}
+.tramite-summary-list {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+.tramite-summary-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px dashed var(--gray-light);
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.tramite-summary-list li span:last-child {
+  font-weight: 700;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.tramite-delivery {
+  margin: 14px 0 4px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--gray-light);
+}
+.tramite-delivery-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.tramite-summary-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+  color: var(--text);
+}
+.tramite-summary-line strong { color: var(--navy); white-space: nowrap; }
+.tramite-summary-note {
+  font-size: 0.82rem !important;
+  color: var(--text-soft) !important;
+  margin: 8px 0 0 !important;
+  line-height: 1.5;
+}
+.tramite-summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin: 10px 0 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gray-light);
+}
+.tramite-summary-line[hidden],
+.tramite-summary-total[hidden] { display: none; }
+.tramite-summary-total span { font-size: 0.95rem; color: var(--text); }
+.tramite-summary-total span small { color: var(--text-soft); font-size: 0.78rem; }
+.tramite-summary-total strong {
+  font-size: 1.4rem;
+  color: var(--navy);
+  white-space: nowrap;
+}
+.tramite-summary .btn-whatsapp { margin-top: 14px; }
 .btn-navy {
   background: var(--navy);
   color: var(--white);
@@ -1275,6 +1470,10 @@ html { scroll-behavior: smooth; }
 .dir-card-header { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
 .dir-card-header-text { flex: 1; min-width: 0; }
 .dir-card-title-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+@media (max-width: 480px) {
+  .dir-card-title-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .dir-card-tag { white-space: normal; }
+}
 @media (min-width: 640px) {
   .dir-form { max-width: 560px; }
 }
