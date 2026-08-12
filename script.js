@@ -2,7 +2,8 @@
   'use strict';
 
   const COMMISSION = 0.07;
-  const COMMISSION_USD_CASH = 0.10;
+  const COMMISSION_USD = 0.10;
+  const TRANSFER_USD_FEE = 3;
   const WHATSAPP_NUMBER = '50376528075';
   const RATE_ENDPOINT = 'https://api.yadio.io/rate/CUP/USD';
   const RATE_TTL_MS = 3 * 60 * 1000;
@@ -32,10 +33,14 @@
     panelEnvio:      document.getElementById('panel-envio'),
     panelSaldo:      document.getElementById('panel-saldo'),
     offers:          document.querySelectorAll('.offer'),
-    dtoggleBtns:      document.querySelectorAll('.dtoggle'),
-    ctoggleBtns:      document.querySelectorAll('.ctoggle'),
-    municipioSelect:  document.getElementById('municipioSelect'),
-    efectivoOptions:  document.getElementById('efectivo-options'),
+    dtoggleBtns:        document.querySelectorAll('.dtoggle'),
+    ctoggleBtns:        document.querySelectorAll('#efectivo-options .ctoggle'),
+    transferCtoggleBtns:document.querySelectorAll('#transferencia-options .ctoggle'),
+    municipioSelect:    document.getElementById('municipioSelect'),
+    efectivoOptions:    document.getElementById('efectivo-options'),
+    transferOptions:    document.getElementById('transferencia-options'),
+    transferNote:       document.getElementById('transferNote'),
+    sumMensajeriaLabel: document.getElementById('sumMensajeriaLabel'),
   };
 
   el.year.textContent = new Date().getFullYear();
@@ -122,21 +127,27 @@
 
   /* ===== Delivery mode state ===== */
   let deliveryMode = 'transferencia'; // 'transferencia' | 'efectivo'
+  let transferCurrency = 'cup';       // 'cup' | 'usd'
   let efectivoCurrency = 'cup';       // 'cup' | 'usd'
   let selectedMunicipio = null;       // { name, cost } or null
 
-  const isEfectivoUsd = () => deliveryMode === 'efectivo' && efectivoCurrency === 'usd';
+  // Moneda a recibir según la modalidad activa
+  const getCurrency = () => deliveryMode === 'efectivo' ? efectivoCurrency : transferCurrency;
+  const isUsd = () => getCurrency() === 'usd';
 
   function getCommission() {
-    return isEfectivoUsd() ? COMMISSION_USD_CASH : COMMISSION;
+    // Solo el efectivo en USD lleva 10%; el resto (incl. Clásica USD) va al 7%
+    return (deliveryMode === 'efectivo' && efectivoCurrency === 'usd') ? COMMISSION_USD : COMMISSION;
   }
 
-  function getMensajeria() {
-    return (deliveryMode === 'efectivo' && selectedMunicipio) ? selectedMunicipio.cost : 0;
+  // Costo fijo en USD que paga el remitente: mensajería (efectivo) o servicio (transferencia USD)
+  function getFixedFee() {
+    if (deliveryMode === 'efectivo') return selectedMunicipio ? selectedMunicipio.cost : 0;
+    return transferCurrency === 'usd' ? TRANSFER_USD_FEE : 0;
   }
 
   function updateRecvFieldUI() {
-    if (isEfectivoUsd()) {
+    if (isUsd()) {
       el.recvCupCurrency.textContent = 'USD';
       el.recvCup.placeholder = '0.00';
     } else {
@@ -145,12 +156,19 @@
     }
   }
 
+  function updateTransferNote() {
+    el.transferNote.textContent = transferCurrency === 'usd'
+      ? 'Tarjeta: Clásica'
+      : 'Tarjetas: BANDEC, Metropolitano o BPA';
+  }
+
   /* ===== Delivery toggle ===== */
   el.dtoggleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       deliveryMode = btn.dataset.mode;
       el.dtoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
       el.efectivoOptions.classList.toggle('hidden', deliveryMode !== 'efectivo');
+      el.transferOptions.classList.toggle('hidden', deliveryMode !== 'transferencia');
       el.municipioSelect.value = '';
       selectedMunicipio = null;
       updateRecvFieldUI();
@@ -160,12 +178,25 @@
     });
   });
 
-  /* ===== Currency toggle (CUP / USD) ===== */
+  /* ===== Currency toggle · Efectivo (CUP / USD) ===== */
   el.ctoggleBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       efectivoCurrency = btn.dataset.currency;
       el.ctoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
       updateRecvFieldUI();
+      recomputeFromPay();
+    });
+  });
+
+  /* ===== Currency toggle · Transferencia (CUP / USD) ===== */
+  el.transferCtoggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      transferCurrency = btn.dataset.currency;
+      el.transferCtoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
+      updateTransferNote();
+      updateRecvFieldUI();
+      el.recvCup.value = '';
+      el.payUsd.value = '';
       recomputeFromPay();
     });
   });
@@ -186,17 +217,20 @@
   let lastRecvValue = 0;
 
   function updateSummary(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
-    const usdMode = isEfectivoUsd();
+    const usdMode = isUsd();
     const netUsd = payUsd - feeUsd - mensajeriaUsd;
 
     el.sumPay.textContent = `$${fmtUsd(payUsd)} USD`;
 
-    const pct = usdMode ? '10' : '7';
+    const pct = Math.round(getCommission() * 100);
     el.sumFeeLabel.textContent = `Comisión (${pct}%)`;
     el.sumFee.textContent = `$${fmtUsd(feeUsd)} USD`;
 
     if (mensajeriaUsd > 0) {
       el.sumMensajeriaRow.style.display = '';
+      el.sumMensajeriaLabel.textContent = deliveryMode === 'efectivo'
+        ? 'Mensajería en La Habana'
+        : 'Costo de servicio';
       el.sumMensajeria.textContent = `$${fmtUsd(mensajeriaUsd)} USD`;
     } else {
       el.sumMensajeriaRow.style.display = 'none';
@@ -225,7 +259,8 @@
       lastRecvValue = cup;
     }
 
-    const canSend = rateOk && payUsd > 0.01
+    const hasRecv = usdMode ? (recvUsdCash > 0) : (recvCup > 0);
+    const canSend = rateOk && hasRecv
       && (deliveryMode === 'transferencia' || selectedMunicipio !== null);
 
     if (canSend) {
@@ -240,12 +275,16 @@
   function buildEnvioUrl(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
     const lines = ['Hola Forte, quiero hacer un envío a Cuba.', ''];
 
-    if (deliveryMode === 'transferencia') {
+    if (deliveryMode === 'transferencia' && transferCurrency === 'cup') {
       const netUsd = payUsd - feeUsd;
-      lines.push('Modalidad: Transferencia a tarjeta (Bandec / BPA / Metro).');
+      lines.push('Modalidad: Transferencia a tarjeta CUP (Bandec / Metropolitano / BPA).');
       lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD (comisión $${fmtUsd(feeUsd)} – 7%).`);
       lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`);
       lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
+    } else if (deliveryMode === 'transferencia') {
+      lines.push('Modalidad: Transferencia a Tarjeta Clásica.');
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, servicio $${fmtUsd(mensajeriaUsd)}).`);
+      lines.push(`Mi familiar recibe: $${fmtUsd(recvUsdCash)} USD en su Tarjeta Clásica.`);
     } else if (efectivoCurrency === 'cup') {
       const netUsd = payUsd - feeUsd - mensajeriaUsd;
       lines.push('Modalidad: Efectivo en CUP en La Habana.');
@@ -276,7 +315,7 @@
     if (!rateOk) return;
     const pay = parseNum(el.payUsd.value);
     const comm = getCommission();
-    const mensajeria = getMensajeria();
+    const mensajeria = getFixedFee();
 
     const payable = Math.max(pay - mensajeria, 0);
     const net = Math.round(payable / (1 + comm) * 100) / 100;
@@ -284,7 +323,7 @@
 
     el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
 
-    if (isEfectivoUsd()) {
+    if (isUsd()) {
       if (editing !== 'cup') {
         el.recvCup.value = net > 0 ? fmtUsd(net) : '';
       }
@@ -301,10 +340,10 @@
   function recomputeFromCup() {
     if (!rateOk) return;
     const comm = getCommission();
-    const mensajeria = getMensajeria();
+    const mensajeria = getFixedFee();
     let pay, net, fee, cup, recvUsdCash;
 
-    if (isEfectivoUsd()) {
+    if (isUsd()) {
       recvUsdCash = parseNum(el.recvCup.value);
       net = recvUsdCash;
       const payable = net * (1 + comm);
@@ -340,6 +379,8 @@
 
   setInputsEnabled(false);
   updateRatePill('loading');
+  updateTransferNote();
+  updateRecvFieldUI();
   updateSummary(0, 0, 0, 0, null);
 
   fetchRate();
