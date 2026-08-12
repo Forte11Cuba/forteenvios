@@ -76,7 +76,16 @@
             </button>
           </div>
 
-          <div id="efectivo-options" class="efectivo-options hidden">
+          <div id="transferencia-options" class="delivery-options transferencia-options">
+            <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
+              <span class="currency-toggle-label">Recibes en:</span>
+              <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
+              <button type="button" class="ctoggle" data-currency="usd">USD</button>
+            </div>
+            <span class="transfer-note" id="transferNote">Tarjetas: BANDEC, Metropolitano o BPA</span>
+          </div>
+
+          <div id="efectivo-options" class="delivery-options efectivo-options hidden">
             <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
               <span class="currency-toggle-label">Recibes en:</span>
               <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
@@ -136,7 +145,7 @@
               <strong id="sumFee">$0.00 USD</strong>
             </div>
             <div class="summary-row" id="sumMensajeriaRow" style="display:none">
-              <span>Mensajería en La Habana</span>
+              <span id="sumMensajeriaLabel">Mensajería en La Habana</span>
               <strong id="sumMensajeria">$0.00 USD</strong>
             </div>
             <div class="summary-row sub" id="sumRecvUsdRow">

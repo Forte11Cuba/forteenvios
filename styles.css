@@ -737,15 +737,33 @@ a:hover { text-decoration: underline; }
 }
 
 /* ===== Efectivo options ===== */
-.efectivo-options {
+.delivery-options {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
+  min-height: 60px;
+  box-sizing: border-box;
   margin-bottom: 10px;
   padding: 10px 12px;
   background: #f0f5fb;
   border-radius: 10px;
   border: 1px solid rgba(30, 58, 95, 0.1);
+}
+
+/* Transferencia: toggle + nota "al lado" en desktop, se apila en móvil */
+.transferencia-options { flex-wrap: wrap; }
+.transfer-note {
+  margin-left: auto;
+  text-align: right;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1.35;
+}
+@media (max-width: 479px) {
+  /* al apilarse en móvil, la nota vuelve a alinearse a la izquierda */
+  .transfer-note { margin-left: 0; text-align: left; }
 }
 
 /* Currency toggle (CUP / USD) */
@@ -841,7 +859,7 @@ a:hover { text-decoration: underline; }
   .row-main .input-group input { padding: 14px 14px; font-size: 1.15rem; }
   .row-main .input-group .currency { padding: 0 14px; font-size: 0.85rem; }
 
-  .efectivo-options { gap: 14px; }
+  .delivery-options { gap: 14px; min-height: 64px; }
   .currency-toggle { gap: 8px; }
   .currency-toggle-label { font-size: 0.74rem; letter-spacing: 0.06em; }
   .ctoggle { padding: 4px 14px; font-size: 0.82rem; }
