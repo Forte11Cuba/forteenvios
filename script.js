@@ -154,7 +154,7 @@
 
   const fmtCup = (n) => new Intl.NumberFormat('es-CU', {
     maximumFractionDigits: 0,
-  }).format(Math.ceil(n - 1e-6 || 0));
+  }).format(Math.ceil((n || 0) - 1e-6) || 0); // "|| 0" evita mostrar "-0"
 
   const floor2 = (n) => Math.floor(n * 100 + 1e-6) / 100;
   const ceil2  = (n) => Math.ceil(n * 100 - 1e-6) / 100;
