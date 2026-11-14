@@ -320,6 +320,15 @@ a:hover { text-decoration: underline; }
   border-radius: 6px;
 }
 
+/* Aviso bajo el resumen (falta municipio, monto mínimo, tasa caída…) */
+.calc-hint {
+  margin: 10px 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #b45309;
+  line-height: 1.35;
+}
+
 /* Button */
 .btn {
   display: inline-flex;

@@ -45,18 +45,18 @@
       <div class="container">
 
         <div class="tabs" role="tablist">
-          <button type="button" class="tab active" role="tab" aria-selected="true" data-tab="envio">
+          <button type="button" class="tab active" role="tab" id="tab-envio" aria-selected="true" aria-controls="panel-envio" data-tab="envio">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             Envío de dinero
           </button>
-          <button type="button" class="tab" role="tab" aria-selected="false" data-tab="saldo">
+          <button type="button" class="tab" role="tab" id="tab-saldo" aria-selected="false" aria-controls="panel-saldo" tabindex="-1" data-tab="saldo">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
             Saldo móvil
           </button>
         </div>
 
         <!-- === Panel: Envío de dinero === -->
-        <div class="calculator card" id="panel-envio" role="tabpanel">
+        <div class="calculator card" id="panel-envio" role="tabpanel" aria-labelledby="tab-envio">
           <div class="calc-header">
             <h2>Calculadora de envío</h2>
             <div class="rate-pill loading" id="ratePill" title="Tasa CUP/USD en vivo">
@@ -66,11 +66,11 @@
           </div>
 
           <div class="delivery-toggle" role="group" aria-label="Modalidad de entrega">
-            <button type="button" class="dtoggle active" data-mode="transferencia">
+            <button type="button" class="dtoggle active" aria-pressed="true" data-mode="transferencia">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
               Transferencia
             </button>
-            <button type="button" class="dtoggle" data-mode="efectivo">
+            <button type="button" class="dtoggle" aria-pressed="false" data-mode="efectivo">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M19 14V6c0-1.1-.9-2-2-2H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-9-1c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm13-6v11c0 1.1-.9 2-2 2H4v-2h17V7h2z"/></svg>
               Efectivo en La Habana
             </button>
@@ -79,8 +79,8 @@
           <div id="transferencia-options" class="delivery-options transferencia-options">
             <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
               <span class="currency-toggle-label">Recibes en:</span>
-              <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
-              <button type="button" class="ctoggle" data-currency="usd">USD</button>
+              <button type="button" class="ctoggle active" aria-pressed="true" data-currency="cup">CUP</button>
+              <button type="button" class="ctoggle" aria-pressed="false" data-currency="usd">USD</button>
             </div>
             <span class="transfer-note" id="transferNote">Tarjetas: BANDEC, Metropolitano o BPA</span>
           </div>
@@ -88,28 +88,13 @@
           <div id="efectivo-options" class="delivery-options efectivo-options hidden">
             <div class="currency-toggle" role="group" aria-label="Moneda a recibir">
               <span class="currency-toggle-label">Recibes en:</span>
-              <button type="button" class="ctoggle active" data-currency="cup">CUP</button>
-              <button type="button" class="ctoggle" data-currency="usd">USD</button>
+              <button type="button" class="ctoggle active" aria-pressed="true" data-currency="cup">CUP</button>
+              <button type="button" class="ctoggle" aria-pressed="false" data-currency="usd">USD</button>
             </div>
             <div class="municipio-section">
               <label for="municipioSelect" class="municipio-label">Municipio de entrega</label>
               <select id="municipioSelect" class="municipio-select">
                 <option value="">Municipio</option>
-                <option value="Centro Habana|5">Centro Habana ($5)</option>
-                <option value="La Habana Vieja|5">La Habana Vieja ($5)</option>
-                <option value="Plaza de la Revolución|5">Plaza de la Revolución ($5)</option>
-                <option value="Playa|5">Playa ($5)</option>
-                <option value="Arroyo Naranjo|5">Arroyo Naranjo ($5)</option>
-                <option value="Boyeros|5">Boyeros ($5)</option>
-                <option value="Diez de Octubre|5">Diez de Octubre ($5)</option>
-                <option value="Marianao|5">Marianao ($5)</option>
-                <option value="Cerro|6">Cerro ($6)</option>
-                <option value="La Lisa|6">La Lisa ($6)</option>
-                <option value="San Miguel del Padrón|6">San Miguel del Padrón ($6)</option>
-                <option value="Cotorro|7">Cotorro ($7)</option>
-                <option value="Guanabacoa|8">Guanabacoa ($8)</option>
-                <option value="La Habana del Este|7">La Habana del Este ($7)</option>
-                <option value="Regla|7">Regla ($7)</option>
               </select>
             </div>
           </div>
@@ -131,7 +116,6 @@
                 <input type="text" inputmode="decimal" id="recvCup" placeholder="0" autocomplete="off" />
                 <span class="currency" id="recvCupCurrency">CUP</span>
               </div>
-              <input type="hidden" id="recvUsd" />
             </div>
           </div>
 
@@ -152,11 +136,17 @@
               <span>Monto equivalente <span class="wrap-mobile">a recibir en Cuba</span></span>
               <strong id="sumRecvUsd">≈ $0.00 USD</strong>
             </div>
+            <div class="summary-row sub" id="sumBillsRow" style="display:none">
+              <span>Entrega en efectivo</span>
+              <strong id="sumBills"></strong>
+            </div>
             <div class="summary-row highlight" id="sumRecvRow">
               <span id="sumRecvLabel">Recibes en Cuba</span>
               <strong id="sumRecv">0 CUP</strong>
             </div>
           </div>
+
+          <p class="calc-hint" id="envioHint" role="status" hidden></p>
 
           <a id="whatsappBtn" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp" aria-disabled="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
@@ -166,7 +156,7 @@
         </div>
 
         <!-- === Panel: Saldo móvil === -->
-        <div class="calculator card hidden" id="panel-saldo" role="tabpanel">
+        <div class="calculator card hidden" id="panel-saldo" role="tabpanel" aria-labelledby="tab-saldo">
           <div class="calc-header">
             <h2>Recarga de saldo móvil</h2>
           </div>
@@ -200,9 +190,11 @@
             <label for="cubaPhone">Número de Cuba (opcional)</label>
             <div class="input-group">
               <span class="prefix">+53</span>
-              <input type="tel" inputmode="numeric" id="cubaPhone" placeholder="5XXX XXXX" autocomplete="off" maxlength="10" />
+              <input type="tel" inputmode="numeric" id="cubaPhone" placeholder="5XXX XXXX" autocomplete="off" maxlength="9" />
             </div>
           </div>
+
+          <p class="calc-hint" id="saldoHint" role="status" hidden></p>
 
           <a id="whatsappSaldoBtn" href="#" target="_blank" rel="noopener" class="btn btn-whatsapp" aria-disabled="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.7.1s-.8.9-.9 1.1c-.2.2-.3.2-.6.1s-1.2-.4-2.2-1.4c-.8-.7-1.4-1.6-1.5-1.9-.2-.3 0-.4.1-.6.1-.1.3-.3.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5s-.7-1.7-1-2.3c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1.1 1.1-1.1 2.6 0 1.5 1.1 3 1.3 3.2.2.2 2.2 3.3 5.3 4.7.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.3-.7.3-1.3.2-1.4-.1-.1-.3-.2-.6-.3zM12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.5 1.3 4.9L2 22l5.3-1.4c1.4.8 3 1.2 4.7 1.2 5.5 0 10-4.5 10-10S17.5 2 12 2z"/></svg>
@@ -318,12 +310,7 @@
             <details>
               <summary>¿Entregan en efectivo en Cuba?</summary>
               <p>Sí, en <strong>La Habana</strong>. El efectivo se entrega en <strong>CUP</strong> (comisión 7%) o en <strong>USD</strong> (comisión 10%). Además se cobra una <strong>tarifa de mensajería</strong> según el municipio:</p>
-              <ul>
-                <li><strong>$5 USD:</strong> Playa, Centro Habana, La Habana Vieja, Plaza de la Revolución, Arroyo Naranjo, Boyeros, Diez de Octubre, Marianao</li>
-                <li><strong>$6 USD:</strong> Cerro, La Lisa, San Miguel del Padrón</li>
-                <li><strong>$7 USD:</strong> Cotorro, La Habana del Este, Regla</li>
-                <li><strong>$8 USD:</strong> Guanabacoa</li>
-              </ul>
+              <ul id="mensajeriaList"></ul>
               <p>Puedes calcular el costo total en la calculadora seleccionando <strong>"Efectivo en La Habana"</strong>. Para <strong>otras provincias</strong>, escríbenos por WhatsApp y lo coordinamos.</p>
             </details>
 
