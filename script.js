@@ -13,7 +13,8 @@
   const RETRY_MS = 8 * 1000;
 
   // Única fuente de precios de mensajería: llena el <select> y la lista del FAQ
-  const MUNICIPIOS = [
+  const ENTREGA_EFECTIVO = [
+    { provincia: 'La Habana', municipios: [
     ['Centro Habana', 5],
     ['La Habana Vieja', 5],
     ['Plaza de la Revolución', 5],
@@ -29,7 +30,14 @@
     ['Guanabacoa', 8],
     ['La Habana del Este', 7],
     ['Regla', 7],
+    ] },
+    { provincia: 'Las Tunas', nota: 'por ahora solo el municipio cabecera', municipios: [
+      ['Las Tunas', 1],
+    ] },
   ];
+
+  const MUNICIPIOS = ENTREGA_EFECTIVO.flatMap(({ provincia, municipios }) =>
+    municipios.map(([name, cost]) => ({ provincia, name, cost })));
 
   const el = {
     payUsd:          document.getElementById('payUsd'),
@@ -119,24 +127,42 @@
   });
 
   /* ===== Municipios ===== */
-  MUNICIPIOS.forEach(([name, cost], i) => {
-    const opt = document.createElement('option');
-    opt.value = String(i);
-    opt.textContent = `${name} ($${cost})`;
-    el.municipioSelect.appendChild(opt);
+  ENTREGA_EFECTIVO.forEach(({ provincia }) => {
+    const group = document.createElement('optgroup');
+    group.label = provincia;
+    MUNICIPIOS.forEach((m, i) => {
+      if (m.provincia !== provincia) return;
+      const opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = `${m.name} ($${m.cost})`;
+      group.appendChild(opt);
+    });
+    el.municipioSelect.appendChild(group);
   });
 
+  // FAQ: una entrada por provincia, con los municipios agrupados por precio
   if (el.mensajeriaList) {
-    const byCost = new Map();
-    MUNICIPIOS.forEach(([name, cost]) => {
-      if (!byCost.has(cost)) byCost.set(cost, []);
-      byCost.get(cost).push(name);
-    });
-    [...byCost.keys()].sort((a, b) => a - b).forEach(cost => {
+    ENTREGA_EFECTIVO.forEach(({ provincia, nota, municipios }) => {
       const li = document.createElement('li');
-      const strong = document.createElement('strong');
-      strong.textContent = `$${cost} USD:`;
-      li.append(strong, ' ' + byCost.get(cost).join(', '));
+      const title = document.createElement('strong');
+      title.textContent = provincia;
+      li.append(title);
+      if (nota) li.append(` (${nota})`);
+
+      const byCost = new Map();
+      municipios.forEach(([name, cost]) => {
+        if (!byCost.has(cost)) byCost.set(cost, []);
+        byCost.get(cost).push(name);
+      });
+      const ul = document.createElement('ul');
+      [...byCost.keys()].sort((a, b) => a - b).forEach(cost => {
+        const item = document.createElement('li');
+        const strong = document.createElement('strong');
+        strong.textContent = `$${cost} USD:`;
+        item.append(strong, ' ' + byCost.get(cost).join(', '));
+        ul.appendChild(item);
+      });
+      li.append(ul);
       el.mensajeriaList.appendChild(li);
     });
   }
@@ -237,7 +263,7 @@
   let deliveryMode = 'transferencia'; // 'transferencia' | 'efectivo'
   let transferCurrency = 'cup';       // 'cup' | 'usd'
   let efectivoCurrency = 'cup';       // 'cup' | 'usd'
-  let selectedMunicipio = null;       // { name, cost } or null
+  let selectedMunicipio = null;       // { provincia, name, cost } or null
 
   // Campo que escribió el cliente por última vez; el otro se calcula a partir de él
   let lastEdited = 'pay';             // 'pay' | 'cup'
@@ -312,8 +338,7 @@
 
   /* ===== Municipio select ===== */
   el.municipioSelect.addEventListener('change', () => {
-    const m = MUNICIPIOS[el.municipioSelect.value];
-    selectedMunicipio = m ? { name: m[0], cost: m[1] } : null;
+    selectedMunicipio = MUNICIPIOS[el.municipioSelect.value] || null;
     recompute();
   });
 
@@ -352,7 +377,7 @@
     if (fixed > 0) {
       el.sumMensajeriaRow.style.display = '';
       el.sumMensajeriaLabel.textContent = deliveryMode === 'efectivo'
-        ? 'Mensajería en La Habana'
+        ? `Mensajería en ${selectedMunicipio.provincia}`
         : 'Costo de servicio';
       el.sumMensajeria.textContent = `$${fmtUsd(fixed)} USD`;
     } else {
@@ -408,13 +433,13 @@
       lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, servicio $${fmtUsd(fixed)}).`);
       lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en su Tarjeta Clásica.`);
     } else if (efectivoCurrency === 'cup') {
-      lines.push('Modalidad: Efectivo en CUP en La Habana.');
+      lines.push(`Modalidad: Efectivo en CUP en ${selectedMunicipio.provincia}.`);
       lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(fixed)} USD).`);
       lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, mensajería $${fmtUsd(fixed)}).`);
       lines.push(`Mi familiar recibe: ${fmtCup(recv)} CUP en efectivo (≈ $${fmtUsd(net)} USD).`);
       lines.push(tasa);
     } else {
-      lines.push('Modalidad: Efectivo en USD en La Habana.');
+      lines.push(`Modalidad: Efectivo en USD en ${selectedMunicipio.provincia}.`);
       lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(fixed)} USD).`);
       lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, mensajería $${fmtUsd(fixed)}).`);
       lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en efectivo (${billsText(recv)}).`);
