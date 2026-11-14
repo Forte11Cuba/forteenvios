@@ -154,12 +154,7 @@
 
   const fmtCup = (n) => new Intl.NumberFormat('es-CU', {
     maximumFractionDigits: 0,
-  }).format(Math.round(n || 0));
-
-  // La tasa se muestra tal cual se usa en el cálculo (hasta 2 decimales)
-  const fmtRate = (n) => new Intl.NumberFormat('es-CU', {
-    maximumFractionDigits: 2,
-  }).format(n || 0);
+  }).format(Math.ceil(n - 1e-6 || 0));
 
   const floor2 = (n) => Math.floor(n * 100 + 1e-6) / 100;
   const ceil2  = (n) => Math.ceil(n * 100 - 1e-6) / 100;
@@ -188,7 +183,7 @@
       const r = Number(data.rate);
       if (!isFinite(r) || r <= 0) throw new Error('Bad rate');
       const ts = Number(data.timestamp);
-      rate = r;
+      rate = Math.ceil(r); // en Cuba no se manejan centavos: 489.2 → 490, y se calcula con esa misma tasa
       rateTimestamp = Date.now();
       rateOld = isFinite(ts) && ts > 0 && (Date.now() - ts) > RATE_MAX_AGE_MS;
       rateOk = true;
@@ -219,12 +214,12 @@
       el.rateText.textContent = 'Tasa no disponible · reintentando';
     } else if (state === 'stale') {
       el.ratePill.classList.add('stale');
-      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP · reintentando`;
+      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP · reintentando`;
     } else if (state === 'old') {
       el.ratePill.classList.add('stale');
-      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP · por confirmar`;
+      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP · por confirmar`;
     } else {
-      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP`;
+      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP`;
     }
   }
 
@@ -401,7 +396,7 @@
   function buildEnvioUrl({ pay, fee, fixed, net, recv }) {
     const lines = ['Hola Forte, quiero hacer un envío a Cuba.', ''];
     const pct = Math.round(getCommission() * 100);
-    const tasa = `Tasa: 1 USD = ${fmtRate(rate)} CUP (El Toque).`;
+    const tasa = `Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`;
 
     if (deliveryMode === 'transferencia' && transferCurrency === 'cup') {
       lines.push('Modalidad: Transferencia a tarjeta CUP (Bandec / Metropolitano / BPA).');
@@ -431,7 +426,7 @@
 
   /* ===== Cálculo =====
      La comisión se cobra sobre lo enviado (neto): pago = neto × (1 + comisión) + costo fijo.
-     Lo que recibe el familiar se redondea hacia abajo para no prometer de más. */
+     Los CUP se redondean hacia arriba (en Cuba no se manejan centavos). */
   function calcFromPay() {
     const pay = parseNum(el.payUsd.value);
     const comm = getCommission();
@@ -443,7 +438,7 @@
       return { pay, fee: payable - net, fixed, net, recv: net };
     }
     const net = payable / (1 + comm);
-    return { pay, fee: payable - net, fixed, net, recv: Math.floor(net * rate + 1e-6) };
+    return { pay, fee: payable - net, fixed, net, recv: Math.ceil(net * rate - 1e-6) };
   }
 
   function calcFromCup() {
@@ -455,7 +450,7 @@
       recv = floor2(parseNum(el.recvCup.value));
       net = recv;
     } else {
-      recv = Math.floor(parseNum(el.recvCup.value, true));
+      recv = Math.ceil(parseNum(el.recvCup.value, true));
       net = recv / rate;
     }
     if (recv <= 0) return { pay: 0, fee: 0, fixed, net: 0, recv: 0 };
