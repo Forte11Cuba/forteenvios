@@ -4,16 +4,37 @@
   const COMMISSION = 0.07;
   const COMMISSION_USD = 0.10;
   const TRANSFER_USD_FEE = 3;
+  const MIN_SEND_USD = 1;
+  const USD_BILL = 5;
   const WHATSAPP_NUMBER = '50376528075';
   const RATE_ENDPOINT = 'https://api.yadio.io/rate/CUP/USD';
   const RATE_TTL_MS = 3 * 60 * 1000;
+  const RATE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
   const RETRY_MS = 8 * 1000;
+
+  // Única fuente de precios de mensajería: llena el <select> y la lista del FAQ
+  const MUNICIPIOS = [
+    ['Centro Habana', 5],
+    ['La Habana Vieja', 5],
+    ['Plaza de la Revolución', 5],
+    ['Playa', 5],
+    ['Arroyo Naranjo', 5],
+    ['Boyeros', 5],
+    ['Diez de Octubre', 5],
+    ['Marianao', 5],
+    ['Cerro', 6],
+    ['La Lisa', 6],
+    ['San Miguel del Padrón', 6],
+    ['Cotorro', 7],
+    ['Guanabacoa', 8],
+    ['La Habana del Este', 7],
+    ['Regla', 7],
+  ];
 
   const el = {
     payUsd:          document.getElementById('payUsd'),
     recvCup:         document.getElementById('recvCup'),
     recvCupCurrency: document.getElementById('recvCupCurrency'),
-    recvUsd:         document.getElementById('recvUsd'),
     ratePill:        document.getElementById('ratePill'),
     rateText:        document.getElementById('rateText'),
     sumPay:          document.getElementById('sumPay'),
@@ -23,10 +44,14 @@
     sumMensajeria:   document.getElementById('sumMensajeria'),
     sumRecvUsdRow:   document.getElementById('sumRecvUsdRow'),
     sumRecvUsd:      document.getElementById('sumRecvUsd'),
+    sumBillsRow:     document.getElementById('sumBillsRow'),
+    sumBills:        document.getElementById('sumBills'),
     sumRecvRow:      document.getElementById('sumRecvRow'),
     sumRecv:         document.getElementById('sumRecv'),
+    envioHint:       document.getElementById('envioHint'),
     whatsappBtn:     document.getElementById('whatsappBtn'),
     whatsappSaldoBtn:document.getElementById('whatsappSaldoBtn'),
+    saldoHint:       document.getElementById('saldoHint'),
     cubaPhone:       document.getElementById('cubaPhone'),
     year:            document.getElementById('year'),
     tabs:            document.querySelectorAll('.tab'),
@@ -37,6 +62,7 @@
     ctoggleBtns:        document.querySelectorAll('#efectivo-options .ctoggle'),
     transferCtoggleBtns:document.querySelectorAll('#transferencia-options .ctoggle'),
     municipioSelect:    document.getElementById('municipioSelect'),
+    mensajeriaList:     document.getElementById('mensajeriaList'),
     efectivoOptions:    document.getElementById('efectivo-options'),
     transferOptions:    document.getElementById('transferencia-options'),
     transferNote:       document.getElementById('transferNote'),
@@ -45,23 +71,81 @@
 
   el.year.textContent = new Date().getFullYear();
 
+  const setPressed = (btns, active) => btns.forEach(b => {
+    b.classList.toggle('active', b === active);
+    b.setAttribute('aria-pressed', b === active ? 'true' : 'false');
+  });
+
+  function setHint(node, text) {
+    node.textContent = text || '';
+    node.hidden = !text;
+  }
+
+  function setBtn(btn, href) {
+    if (href) {
+      btn.removeAttribute('aria-disabled');
+      btn.href = href;
+    } else {
+      btn.setAttribute('aria-disabled', 'true');
+      btn.href = '#';
+    }
+  }
+
+  const waUrl = (lines) =>
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+
   /* ===== Tabs ===== */
-  el.tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      el.tabs.forEach(t => {
-        t.classList.toggle('active', t === tab);
-        t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
-      });
-      const which = tab.dataset.tab;
-      el.panelEnvio.classList.toggle('hidden', which !== 'envio');
-      el.panelSaldo.classList.toggle('hidden', which !== 'saldo');
+  function selectTab(tab) {
+    el.tabs.forEach(t => {
+      t.classList.toggle('active', t === tab);
+      t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+      t.tabIndex = t === tab ? 0 : -1;
+    });
+    const which = tab.dataset.tab;
+    el.panelEnvio.classList.toggle('hidden', which !== 'envio');
+    el.panelSaldo.classList.toggle('hidden', which !== 'saldo');
+  }
+
+  el.tabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => selectTab(tab));
+    tab.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const step = e.key === 'ArrowRight' ? 1 : -1;
+      const next = el.tabs[(i + step + el.tabs.length) % el.tabs.length];
+      selectTab(next);
+      next.focus();
     });
   });
+
+  /* ===== Municipios ===== */
+  MUNICIPIOS.forEach(([name, cost], i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `${name} ($${cost})`;
+    el.municipioSelect.appendChild(opt);
+  });
+
+  if (el.mensajeriaList) {
+    const byCost = new Map();
+    MUNICIPIOS.forEach(([name, cost]) => {
+      if (!byCost.has(cost)) byCost.set(cost, []);
+      byCost.get(cost).push(name);
+    });
+    [...byCost.keys()].sort((a, b) => a - b).forEach(cost => {
+      const li = document.createElement('li');
+      const strong = document.createElement('strong');
+      strong.textContent = `$${cost} USD:`;
+      li.append(strong, ' ' + byCost.get(cost).join(', '));
+      el.mensajeriaList.appendChild(li);
+    });
+  }
 
   /* ===== Rate ===== */
   let rate = 0;
   let rateTimestamp = 0;
   let rateOk = false;
+  let rateOld = false;
   let retryTimer = null;
 
   const fmtUsd = (n) => new Intl.NumberFormat('en-US', {
@@ -70,12 +154,22 @@
 
   const fmtCup = (n) => new Intl.NumberFormat('es-CU', {
     maximumFractionDigits: 0,
-  }).format(Math.ceil(n || 0));
+  }).format(Math.round(n || 0));
 
-  const parseNum = (v) => {
+  // La tasa se muestra tal cual se usa en el cálculo (hasta 2 decimales)
+  const fmtRate = (n) => new Intl.NumberFormat('es-CU', {
+    maximumFractionDigits: 2,
+  }).format(n || 0);
+
+  const floor2 = (n) => Math.floor(n * 100 + 1e-6) / 100;
+  const ceil2  = (n) => Math.ceil(n * 100 - 1e-6) / 100;
+
+  // thousandsDot: acepta "10.000" como diez mil (solo para montos en CUP)
+  const parseNum = (v, thousandsDot = false) => {
     if (v == null) return 0;
-    const cleaned = String(v).replace(/[^\d.,]/g, '').replace(/,/g, '');
-    const n = parseFloat(cleaned);
+    let s = String(v).replace(/[^\d.,]/g, '');
+    if (thousandsDot && /^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, '');
+    const n = parseFloat(s.replace(/,/g, ''));
     return isFinite(n) && n > 0 ? n : 0;
   };
 
@@ -93,17 +187,20 @@
       const data = await res.json();
       const r = Number(data.rate);
       if (!isFinite(r) || r <= 0) throw new Error('Bad rate');
+      const ts = Number(data.timestamp);
       rate = r;
       rateTimestamp = Date.now();
+      rateOld = isFinite(ts) && ts > 0 && (Date.now() - ts) > RATE_MAX_AGE_MS;
       rateOk = true;
       clearTimeout(retryTimer);
       setInputsEnabled(true);
-      updateRatePill('ok');
-      recomputeFromCurrent();
+      updateRatePill(rateOld ? 'old' : 'ok');
+      recompute();
     } catch (err) {
       if (!rateOk) {
-        updateRatePill('loading');
+        updateRatePill('error');
         setInputsEnabled(false);
+        showRateUnavailable();
       } else {
         updateRatePill('stale');
       }
@@ -117,12 +214,28 @@
     if (state === 'loading') {
       el.ratePill.classList.add('loading');
       el.rateText.textContent = 'Calculando tasa…';
+    } else if (state === 'error') {
+      el.ratePill.classList.add('error');
+      el.rateText.textContent = 'Tasa no disponible · reintentando';
     } else if (state === 'stale') {
       el.ratePill.classList.add('stale');
-      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP · reintentando`;
+      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP · reintentando`;
+    } else if (state === 'old') {
+      el.ratePill.classList.add('stale');
+      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP · por confirmar`;
     } else {
-      el.rateText.textContent = `1 USD = ${fmtCup(rate)} CUP`;
+      el.rateText.textContent = `1 USD = ${fmtRate(rate)} CUP`;
     }
+  }
+
+  // Sin tasa no se puede calcular, pero el cliente aún puede escribirnos
+  function showRateUnavailable() {
+    setHint(el.envioHint, 'No pudimos cargar la tasa de hoy. Escríbenos por WhatsApp y te confirmamos el monto.');
+    setBtn(el.whatsappBtn, waUrl([
+      'Hola Forte, quiero hacer un envío a Cuba.',
+      '',
+      '¿Me confirmas la tasa de hoy?',
+    ]));
   }
 
   /* ===== Delivery mode state ===== */
@@ -130,6 +243,9 @@
   let transferCurrency = 'cup';       // 'cup' | 'usd'
   let efectivoCurrency = 'cup';       // 'cup' | 'usd'
   let selectedMunicipio = null;       // { name, cost } or null
+
+  // Campo que escribió el cliente por última vez; el otro se calcula a partir de él
+  let lastEdited = 'pay';             // 'pay' | 'cup'
 
   // Moneda a recibir según la modalidad activa
   const getCurrency = () => deliveryMode === 'efectivo' ? efectivoCurrency : transferCurrency;
@@ -162,216 +278,211 @@
       : 'Tarjetas: BANDEC, Metropolitano o BPA';
   }
 
+  // Si cambia la moneda a recibir, el número del campo "Recibes" ya no significa
+  // lo mismo: se conserva lo que entrega el cliente y se recalcula desde ahí.
+  function changeState(mutate) {
+    const prevCurrency = getCurrency();
+    mutate();
+    if (getCurrency() !== prevCurrency) lastEdited = 'pay';
+    updateTransferNote();
+    updateRecvFieldUI();
+    recompute();
+  }
+
   /* ===== Delivery toggle ===== */
   el.dtoggleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', () => changeState(() => {
       deliveryMode = btn.dataset.mode;
-      el.dtoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
+      setPressed(el.dtoggleBtns, btn);
       el.efectivoOptions.classList.toggle('hidden', deliveryMode !== 'efectivo');
       el.transferOptions.classList.toggle('hidden', deliveryMode !== 'transferencia');
-      el.municipioSelect.value = '';
-      selectedMunicipio = null;
-      updateRecvFieldUI();
-      el.recvCup.value = '';
-      el.payUsd.value = '';
-      recomputeFromPay();
-    });
+    }));
   });
 
   /* ===== Currency toggle · Efectivo (CUP / USD) ===== */
   el.ctoggleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', () => changeState(() => {
       efectivoCurrency = btn.dataset.currency;
-      el.ctoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
-      updateRecvFieldUI();
-      recomputeFromPay();
-    });
+      setPressed(el.ctoggleBtns, btn);
+    }));
   });
 
   /* ===== Currency toggle · Transferencia (CUP / USD) ===== */
   el.transferCtoggleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', () => changeState(() => {
       transferCurrency = btn.dataset.currency;
-      el.transferCtoggleBtns.forEach(b => b.classList.toggle('active', b === btn));
-      updateTransferNote();
-      updateRecvFieldUI();
-      el.recvCup.value = '';
-      el.payUsd.value = '';
-      recomputeFromPay();
-    });
+      setPressed(el.transferCtoggleBtns, btn);
+    }));
   });
 
   /* ===== Municipio select ===== */
   el.municipioSelect.addEventListener('change', () => {
-    const val = el.municipioSelect.value;
-    if (val) {
-      const [name, cost] = val.split('|');
-      selectedMunicipio = { name, cost: Number(cost) };
-    } else {
-      selectedMunicipio = null;
-    }
-    recomputeFromCurrent();
+    const m = MUNICIPIOS[el.municipioSelect.value];
+    selectedMunicipio = m ? { name: m[0], cost: m[1] } : null;
+    recompute();
   });
 
   /* ===== Summary ===== */
   let lastRecvValue = 0;
 
-  function updateSummary(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
-    const usdMode = isUsd();
-    const netUsd = payUsd - feeUsd - mensajeriaUsd;
+  // Billetes de $5 y el sobrante en CUP (ver FAQ)
+  function splitBills(netUsd) {
+    const bills = Math.floor((netUsd + 1e-6) / USD_BILL) * USD_BILL;
+    const rest = Math.max(Math.round((netUsd - bills) * 100) / 100, 0);
+    return { bills, rest };
+  }
 
-    el.sumPay.textContent = `$${fmtUsd(payUsd)} USD`;
+  function getHint(calc) {
+    const { pay, fixed, net } = calc;
+    if (pay <= 0) return '';
+    if (deliveryMode === 'efectivo' && !selectedMunicipio) return 'Elige el municipio de entrega para continuar.';
+    if (fixed > 0 && pay <= fixed) {
+      const what = deliveryMode === 'efectivo' ? 'la mensajería' : 'el costo de servicio';
+      return `El monto no alcanza para cubrir ${what} ($${fmtUsd(fixed)} USD).`;
+    }
+    if (net < MIN_SEND_USD) return `El monto mínimo a enviar es $${fmtUsd(MIN_SEND_USD)} USD.`;
+    return '';
+  }
+
+  function updateSummary(calc) {
+    const { pay, fee, fixed, net, recv } = calc;
+    const usdMode = isUsd();
+
+    el.sumPay.textContent = `$${fmtUsd(pay)} USD`;
 
     const pct = Math.round(getCommission() * 100);
-    el.sumFeeLabel.textContent = `Comisión (${pct}%)`;
-    el.sumFee.textContent = `$${fmtUsd(feeUsd)} USD`;
+    el.sumFeeLabel.textContent = `Comisión (${pct}% sobre lo recibido)`;
+    el.sumFee.textContent = `$${fmtUsd(fee)} USD`;
 
-    if (mensajeriaUsd > 0) {
+    if (fixed > 0) {
       el.sumMensajeriaRow.style.display = '';
       el.sumMensajeriaLabel.textContent = deliveryMode === 'efectivo'
         ? 'Mensajería en La Habana'
         : 'Costo de servicio';
-      el.sumMensajeria.textContent = `$${fmtUsd(mensajeriaUsd)} USD`;
+      el.sumMensajeria.textContent = `$${fmtUsd(fixed)} USD`;
     } else {
       el.sumMensajeriaRow.style.display = 'none';
     }
 
     if (usdMode) {
-      const cupEquiv = (recvUsdCash || 0) * rate;
-      el.sumRecvUsd.textContent = recvUsdCash > 0 ? `≈ ${fmtCup(cupEquiv)} CUP` : '≈ 0 CUP';
-      const val = recvUsdCash || 0;
-      el.sumRecv.textContent = `$${fmtUsd(val)} USD`;
-      if (val > 0 && Math.round(val * 100) !== Math.round(lastRecvValue * 100)) {
-        el.sumRecvRow.classList.remove('flash');
-        void el.sumRecvRow.offsetWidth;
-        el.sumRecvRow.classList.add('flash');
-      }
-      lastRecvValue = val;
+      el.sumRecvUsd.textContent = recv > 0 ? `≈ ${fmtCup(recv * rate)} CUP` : '≈ 0 CUP';
+      el.sumRecv.textContent = `$${fmtUsd(recv)} USD`;
     } else {
-      el.sumRecvUsd.textContent = netUsd > 0 ? `≈ $${fmtUsd(netUsd)} USD` : '≈ $0.00 USD';
-      const cup = recvCup || 0;
-      el.sumRecv.textContent = `${fmtCup(cup)} CUP`;
-      if (cup > 0 && Math.round(cup) !== Math.round(lastRecvValue)) {
-        el.sumRecvRow.classList.remove('flash');
-        void el.sumRecvRow.offsetWidth;
-        el.sumRecvRow.classList.add('flash');
-      }
-      lastRecvValue = cup;
+      el.sumRecvUsd.textContent = net > 0 ? `≈ $${fmtUsd(net)} USD` : '≈ $0.00 USD';
+      el.sumRecv.textContent = `${fmtCup(recv)} CUP`;
     }
 
-    const hasRecv = usdMode ? (recvUsdCash > 0) : (recvCup > 0);
-    const canSend = rateOk && hasRecv
-      && (deliveryMode === 'transferencia' || selectedMunicipio !== null);
+    const showBills = deliveryMode === 'efectivo' && efectivoCurrency === 'usd' && recv > 0;
+    el.sumBillsRow.style.display = showBills ? '' : 'none';
+    if (showBills) el.sumBills.textContent = billsText(recv);
 
-    if (canSend) {
-      el.whatsappBtn.removeAttribute('aria-disabled');
-      el.whatsappBtn.href = buildEnvioUrl(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash);
-    } else {
-      el.whatsappBtn.setAttribute('aria-disabled', 'true');
-      el.whatsappBtn.href = '#';
+    const flashKey = usdMode ? Math.round(recv * 100) : Math.round(recv);
+    if (recv > 0 && flashKey !== lastRecvValue) {
+      el.sumRecvRow.classList.remove('flash');
+      void el.sumRecvRow.offsetWidth;
+      el.sumRecvRow.classList.add('flash');
     }
+    lastRecvValue = flashKey;
+
+    const hint = getHint(calc);
+    setHint(el.envioHint, hint);
+
+    const canSend = rateOk && recv > 0 && !hint;
+    setBtn(el.whatsappBtn, canSend ? buildEnvioUrl(calc) : null);
   }
 
-  function buildEnvioUrl(payUsd, feeUsd, mensajeriaUsd, recvCup, recvUsdCash) {
+  function billsText(netUsd) {
+    const { bills, rest } = splitBills(netUsd);
+    if (rest <= 0) return `$${bills} USD en billetes`;
+    const restCup = `≈ ${fmtCup(rest * rate)} CUP`;
+    return bills > 0 ? `$${bills} USD + ${restCup}` : `${restCup} (menos de $${USD_BILL})`;
+  }
+
+  function buildEnvioUrl({ pay, fee, fixed, net, recv }) {
     const lines = ['Hola Forte, quiero hacer un envío a Cuba.', ''];
+    const pct = Math.round(getCommission() * 100);
+    const tasa = `Tasa: 1 USD = ${fmtRate(rate)} CUP (El Toque).`;
 
     if (deliveryMode === 'transferencia' && transferCurrency === 'cup') {
-      const netUsd = payUsd - feeUsd;
       lines.push('Modalidad: Transferencia a tarjeta CUP (Bandec / Metropolitano / BPA).');
-      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD (comisión $${fmtUsd(feeUsd)} – 7%).`);
-      lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP (≈ $${fmtUsd(netUsd)} USD).`);
-      lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD (comisión $${fmtUsd(fee)} – ${pct}%).`);
+      lines.push(`Mi familiar recibe: ${fmtCup(recv)} CUP (≈ $${fmtUsd(net)} USD).`);
+      lines.push(tasa);
     } else if (deliveryMode === 'transferencia') {
       lines.push('Modalidad: Transferencia a Tarjeta Clásica.');
-      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, servicio $${fmtUsd(mensajeriaUsd)}).`);
-      lines.push(`Mi familiar recibe: $${fmtUsd(recvUsdCash)} USD en su Tarjeta Clásica.`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, servicio $${fmtUsd(fixed)}).`);
+      lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en su Tarjeta Clásica.`);
     } else if (efectivoCurrency === 'cup') {
-      const netUsd = payUsd - feeUsd - mensajeriaUsd;
       lines.push('Modalidad: Efectivo en CUP en La Habana.');
-      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
-      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 7%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
-      lines.push(`Mi familiar recibe: ${fmtCup(recvCup)} CUP en efectivo (≈ $${fmtUsd(netUsd)} USD).`);
-      lines.push(`Tasa: 1 USD = ${fmtCup(rate)} CUP (El Toque).`);
+      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(fixed)} USD).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, mensajería $${fmtUsd(fixed)}).`);
+      lines.push(`Mi familiar recibe: ${fmtCup(recv)} CUP en efectivo (≈ $${fmtUsd(net)} USD).`);
+      lines.push(tasa);
     } else {
       lines.push('Modalidad: Efectivo en USD en La Habana.');
-      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(mensajeriaUsd)} USD).`);
-      lines.push(`Yo entrego en El Salvador: $${fmtUsd(payUsd)} USD total (comisión $${fmtUsd(feeUsd)} – 10%, mensajería $${fmtUsd(mensajeriaUsd)}).`);
-      lines.push(`Mi familiar recibe: $${fmtUsd(recvUsdCash)} USD en efectivo.`);
+      lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(fixed)} USD).`);
+      lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, mensajería $${fmtUsd(fixed)}).`);
+      lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en efectivo (${billsText(recv)}).`);
     }
 
     lines.push('', '¿Podemos coordinar?');
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+    return waUrl(lines);
   }
 
-  let editing = null;
-
-  function recomputeFromCurrent() {
-    if (!rateOk) return;
-    if (editing === 'cup') return recomputeFromCup();
-    return recomputeFromPay();
-  }
-
-  function recomputeFromPay() {
-    if (!rateOk) return;
+  /* ===== Cálculo =====
+     La comisión se cobra sobre lo enviado (neto): pago = neto × (1 + comisión) + costo fijo.
+     Lo que recibe el familiar se redondea hacia abajo para no prometer de más. */
+  function calcFromPay() {
     const pay = parseNum(el.payUsd.value);
     const comm = getCommission();
-    const mensajeria = getFixedFee();
-
-    const payable = Math.max(pay - mensajeria, 0);
-    const net = Math.round(payable / (1 + comm) * 100) / 100;
-    const fee = payable - net;
-
-    el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
+    const fixed = getFixedFee();
+    const payable = Math.max(pay - fixed, 0);
 
     if (isUsd()) {
-      if (editing !== 'cup') {
-        el.recvCup.value = net > 0 ? fmtUsd(net) : '';
-      }
-      updateSummary(pay, fee, mensajeria, null, net);
-    } else {
-      const cup = net * rate;
-      if (editing !== 'cup') {
-        el.recvCup.value = cup > 0 ? fmtCup(cup) : '';
-      }
-      updateSummary(pay, fee, mensajeria, cup, null);
+      const net = floor2(payable / (1 + comm));
+      return { pay, fee: payable - net, fixed, net, recv: net };
     }
+    const net = payable / (1 + comm);
+    return { pay, fee: payable - net, fixed, net, recv: Math.floor(net * rate + 1e-6) };
   }
 
-  function recomputeFromCup() {
-    if (!rateOk) return;
+  function calcFromCup() {
     const comm = getCommission();
-    const mensajeria = getFixedFee();
-    let pay, net, fee, cup, recvUsdCash;
+    const fixed = getFixedFee();
+    let net, recv;
 
     if (isUsd()) {
-      recvUsdCash = parseNum(el.recvCup.value);
-      net = recvUsdCash;
-      const payable = net * (1 + comm);
-      pay = payable + mensajeria;
-      fee = payable - net;
-      cup = null;
+      recv = floor2(parseNum(el.recvCup.value));
+      net = recv;
     } else {
-      cup = parseNum(el.recvCup.value);
-      net = cup / rate;
-      const payable = net * (1 + comm);
-      pay = payable + mensajeria;
-      fee = payable - net;
-      recvUsdCash = null;
+      recv = Math.floor(parseNum(el.recvCup.value, true));
+      net = recv / rate;
     }
+    if (recv <= 0) return { pay: 0, fee: 0, fixed, net: 0, recv: 0 };
 
-    el.payUsd.value = pay > 0 ? fmtUsd(pay) : '';
-    el.recvUsd.value = net > 0 ? fmtUsd(net) : '';
-    updateSummary(pay, fee, mensajeria, cup, recvUsdCash);
+    const payable = ceil2(net * (1 + comm));
+    return { pay: payable + fixed, fee: payable - net, fixed, net, recv };
   }
 
-  function bind(inputEl, kind, fn) {
-    inputEl.addEventListener('focus', () => { editing = kind; });
-    inputEl.addEventListener('blur',  () => { editing = null; });
-    inputEl.addEventListener('input', fn);
+  function recompute() {
+    if (!rateOk) return;
+    let calc;
+    if (lastEdited === 'cup') {
+      calc = calcFromCup();
+      if (document.activeElement !== el.payUsd) {
+        el.payUsd.value = calc.pay > 0 ? fmtUsd(calc.pay) : '';
+      }
+    } else {
+      calc = calcFromPay();
+      if (document.activeElement !== el.recvCup) {
+        el.recvCup.value = calc.recv > 0 ? (isUsd() ? fmtUsd(calc.recv) : fmtCup(calc.recv)) : '';
+      }
+    }
+    updateSummary(calc);
   }
 
-  bind(el.payUsd,  'pay', recomputeFromPay);
-  bind(el.recvCup, 'cup', recomputeFromCup);
+  el.payUsd.addEventListener('input',  () => { lastEdited = 'pay'; recompute(); });
+  el.recvCup.addEventListener('input', () => { lastEdited = 'cup'; recompute(); });
 
   el.whatsappBtn.addEventListener('click', (e) => {
     if (el.whatsappBtn.getAttribute('aria-disabled') === 'true') e.preventDefault();
@@ -381,7 +492,7 @@
   updateRatePill('loading');
   updateTransferNote();
   updateRecvFieldUI();
-  updateSummary(0, 0, 0, 0, null);
+  updateSummary({ pay: 0, fee: 0, fixed: 0, net: 0, recv: 0 });
 
   fetchRate();
   setInterval(fetchRate, RATE_TTL_MS);
@@ -392,28 +503,27 @@
   /* ===== Saldo móvil ===== */
   let selectedOffer = null;
 
+  // Móviles cubanos: 8 dígitos empezando por 5
+  const getPhone = () => (el.cubaPhone.value || '').replace(/\D/g, '');
+  const phoneValid = (p) => p === '' || /^5\d{7}$/.test(p);
+
   function updateSaldoBtn() {
-    if (selectedOffer) {
-      el.whatsappSaldoBtn.removeAttribute('aria-disabled');
-      el.whatsappSaldoBtn.href = buildSaldoUrl();
-    } else {
-      el.whatsappSaldoBtn.setAttribute('aria-disabled', 'true');
-      el.whatsappSaldoBtn.href = '#';
-    }
+    const phone = getPhone();
+    const ok = phoneValid(phone);
+    setHint(el.saldoHint, ok ? '' : 'El número debe tener 8 dígitos y empezar por 5.');
+    setBtn(el.whatsappSaldoBtn, selectedOffer && ok ? buildSaldoUrl(phone) : null);
   }
 
-  function buildSaldoUrl() {
+  function buildSaldoUrl(phone) {
     const { cup, usd } = selectedOffer;
-    const phone = (el.cubaPhone.value || '').replace(/\s+/g, '');
-    const lines = [
+    return waUrl([
       'Hola Forte, quiero una recarga de saldo móvil para Cuba.',
       '',
       `Paquete: ${cup} CUP por $${fmtUsd(parseFloat(usd))} USD.`,
       phone ? `Número a recargar: +53 ${phone}` : 'Número a recargar: te lo paso por aquí.',
       '',
       '¿Podemos coordinar?',
-    ];
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join('\n'))}`;
+    ]);
   }
 
   el.offers.forEach(btn => {
@@ -424,7 +534,10 @@
     });
   });
 
-  el.cubaPhone.addEventListener('input', updateSaldoBtn);
+  el.cubaPhone.addEventListener('input', () => {
+    el.cubaPhone.value = el.cubaPhone.value.replace(/[^\d ]/g, '');
+    updateSaldoBtn();
+  });
   el.whatsappSaldoBtn.addEventListener('click', (e) => {
     if (el.whatsappSaldoBtn.getAttribute('aria-disabled') === 'true') e.preventDefault();
   });
