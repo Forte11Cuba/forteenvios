@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /guias/_plantilla.html
+
+Sitemap: https://forteenvios.com/sitemap.xml

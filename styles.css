@@ -413,6 +413,8 @@ a:hover { text-decoration: underline; }
   line-height: 1.55;
 }
 .steps li { margin-bottom: 6px; }
+.steps-guide { margin: 10px 0 0; font-size: 0.88rem; font-weight: 600; }
+.steps-guide a { color: var(--navy); }
 .steps strong { color: var(--text); }
 
 /* Footer */
@@ -1154,6 +1156,12 @@ html { scroll-behavior: smooth; scrollbar-gutter: stable; overflow-y: scroll; }
   color: var(--navy);
   margin: 22px 0 8px;
 }
+/* Tablas en guías (se desplazan en horizontal si no caben) */
+.article .table-wrap { overflow-x: auto; margin: 12px 0 16px; }
+.article table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.article th, .article td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--gray-light); }
+.article th { color: var(--navy); background: var(--gray-bg); font-weight: 700; }
+.article td:not(:first-child), .article th:not(:first-child) { white-space: nowrap; }
 .article h3 {
   font-size: 1.02rem;
   color: var(--navy);
