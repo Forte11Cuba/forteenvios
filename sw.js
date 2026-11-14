@@ -4,7 +4,7 @@
    - Nada de otros dominios (tasa de Yadio, WhatsApp…) pasa por aquí: siempre en vivo. */
 'use strict';
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `forte-${VERSION}`;
 const NETWORK_TIMEOUT_MS = 5000;
 
@@ -23,7 +23,7 @@ const PRECACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(PRECACHE))
+      .then((cache) => cache.addAll(PRECACHE.map((u) => new Request(u, { cache: 'reload' }))))
       .then(() => self.skipWaiting())
   );
 });
@@ -46,7 +46,9 @@ self.addEventListener('fetch', (event) => {
 async function networkFirst(req, event) {
   const cache = await caches.open(CACHE);
 
-  const network = fetch(req).then((res) => {
+  // no-cache: siempre se pregunta al servidor si hay versión nueva (si no la hay,
+  // responde 304 sin volver a descargar). Evita mezclar HTML nuevo con CSS/JS viejos.
+  const network = fetch(req, { cache: 'no-cache' }).then((res) => {
     if (res.ok) cache.put(req, res.clone());
     return res;
   });
