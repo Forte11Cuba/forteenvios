@@ -7,9 +7,13 @@
   3. Pon las imágenes de la guía (logos, fotos, capturas) en la subcarpeta img/
      de esa misma carpeta y referéncialas como img/nombre.png.
   4. Cambia el <title>, la <meta name="description">, la etiqueta (guia-tag),
-     el título, la fecha y el contenido.
+     el título, la fecha y el contenido. En las etiquetas SEO (canonical, og:*,
+     y el bloque application/ld+json) reemplaza NOMBRE-DE-LA-GUIA, el título,
+     la descripción y la fecha (AAAA-MM-DD).
   5. Añade su enlace en guias/index.html (la más reciente arriba):
      href="proceso-asilo-el-salvador/index.html"
+  6. Añade la URL al sitemap.xml de la raíz:
+     https://forteenvios.com/guias/proceso-asilo-el-salvador/
 -->
 <!DOCTYPE html>
 <html lang="es">
@@ -18,6 +22,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Título de la guía · Forte Envíos</title>
   <meta name="description" content="Resumen corto de la guía (aparece en Google y al compartir el enlace)." />
+  <link rel="canonical" href="https://forteenvios.com/guias/NOMBRE-DE-LA-GUIA/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="Forte Envíos" />
+  <meta property="og:locale" content="es_SV" />
+  <meta property="og:title" content="Título de la guía · Forte Envíos" />
+  <meta property="og:description" content="Resumen corto de la guía (aparece en Google y al compartir el enlace)." />
+  <meta property="og:url" content="https://forteenvios.com/guias/NOMBRE-DE-LA-GUIA/" />
+  <meta property="og:image" content="https://forteenvios.com/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Forte Envíos: envía dinero a Cuba desde El Salvador" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="theme-color" content="#1e3a5f" />
   <link rel="icon" type="image/png" href="../../logo.png" />
   <link rel="manifest" href="../../manifest.webmanifest" />
@@ -27,6 +43,20 @@
   <meta name="apple-mobile-web-app-title" content="Forte Envíos" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <link rel="stylesheet" href="../../styles.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Título de la guía",
+    "description": "Resumen corto de la guía.",
+    "image": "https://forteenvios.com/og-image.jpg",
+    "datePublished": "2026-06-10",
+    "inLanguage": "es",
+    "author": { "@type": "Organization", "name": "Forte Envíos", "url": "https://forteenvios.com/" },
+    "publisher": { "@type": "Organization", "name": "Forte Envíos", "url": "https://forteenvios.com/", "logo": "https://forteenvios.com/icons/icon-512.png" },
+    "mainEntityOfPage": "https://forteenvios.com/guias/NOMBRE-DE-LA-GUIA/"
+  }
+  </script>
 </head>
 <body>
   <header class="site-header">
