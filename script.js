@@ -60,6 +60,7 @@
     whatsappBtn:     document.getElementById('whatsappBtn'),
     whatsappSaldoBtn:document.getElementById('whatsappSaldoBtn'),
     saldoHint:       document.getElementById('saldoHint'),
+    promoNote:       document.getElementById('promoNote'),
     cubaPhone:       document.getElementById('cubaPhone'),
     year:            document.getElementById('year'),
     tabs:            document.querySelectorAll('.tab'),
@@ -535,12 +536,23 @@
   }
 
   function buildSaldoUrl(phone) {
-    const { cup, usd } = selectedOffer;
+    const { cup, usd, promo } = selectedOffer;
+    const numero = phone ? `Número a recargar: +53 ${phone}` : 'Número a recargar: te lo paso por aquí.';
+    if (promo) {
+      return waUrl([
+        'Hola Forte, quiero la recarga en promoción de ETECSA.',
+        '',
+        `Precio: $${fmtUsd(parseFloat(usd))} USD.`,
+        numero,
+        '',
+        '¿Hay una promoción activa ahora? ¿Qué incluye?',
+      ]);
+    }
     return waUrl([
       'Hola Forte, quiero una recarga de saldo móvil para Cuba.',
       '',
       `Paquete: ${cup} CUP por $${fmtUsd(parseFloat(usd))} USD.`,
-      phone ? `Número a recargar: +53 ${phone}` : 'Número a recargar: te lo paso por aquí.',
+      numero,
       '',
       '¿Podemos coordinar?',
     ]);
@@ -549,9 +561,18 @@
   el.offers.forEach(btn => {
     btn.addEventListener('click', () => {
       el.offers.forEach(b => b.classList.toggle('selected', b === btn));
-      selectedOffer = { cup: btn.dataset.cup, usd: btn.dataset.usd };
+      selectedOffer = { cup: btn.dataset.cup, usd: btn.dataset.usd, promo: btn.dataset.promo === '1' };
+      el.promoNote.hidden = !selectedOffer.promo;
       updateSaldoBtn();
     });
+  });
+
+  // La nube de la promo se cierra al tocar fuera de la opción o con Escape
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.offer[data-promo]')) el.promoNote.hidden = true;
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') el.promoNote.hidden = true;
   });
 
   el.cubaPhone.addEventListener('input', () => {
