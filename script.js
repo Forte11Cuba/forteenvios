@@ -567,6 +567,14 @@
     });
   });
 
+  // La nube de la promo se cierra al tocar fuera de la opción o con Escape
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.offer[data-promo]')) el.promoNote.hidden = true;
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') el.promoNote.hidden = true;
+  });
+
   el.cubaPhone.addEventListener('input', () => {
     el.cubaPhone.value = el.cubaPhone.value.replace(/[^\d ]/g, '');
     updateSaldoBtn();
