@@ -524,20 +524,20 @@
   /* ===== Saldo móvil ===== */
   let selectedOffer = null;
 
-  // Móviles cubanos: 8 dígitos empezando por 5
+  // Móviles cubanos: 8 dígitos (los antiguos empiezan por 5, los nuevos por 63)
   const getPhone = () => (el.cubaPhone.value || '').replace(/\D/g, '');
-  const phoneValid = (p) => p === '' || /^5\d{7}$/.test(p);
+  const phoneValid = (p) => p === '' || /^\d{8}$/.test(p);
 
-  // Mientras se escribe, solo se avisa si el número ya es imposible (no empieza
-  // por 5 o tiene más de 8 dígitos); si está incompleto, se avisa al salir del campo.
+  // Mientras se escribe, solo se avisa si el número ya tiene más de 8 dígitos;
+  // si está incompleto, se avisa al salir del campo.
   let phoneTouched = false;
 
   function updateSaldoBtn() {
     const phone = getPhone();
     const ok = phoneValid(phone);
-    const clearlyWrong = phone !== '' && (phone[0] !== '5' || phone.length > 8);
+    const clearlyWrong = phone.length > 8;
     const showHint = !ok && (clearlyWrong || phoneTouched);
-    setHint(el.saldoHint, showHint ? 'El número debe tener 8 dígitos y empezar por 5.' : '');
+    setHint(el.saldoHint, showHint ? 'El número debe tener 8 dígitos.' : '');
     setBtn(el.whatsappSaldoBtn, selectedOffer && ok ? buildSaldoUrl(phone) : null);
   }
 
