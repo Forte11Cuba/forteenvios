@@ -528,10 +528,16 @@
   const getPhone = () => (el.cubaPhone.value || '').replace(/\D/g, '');
   const phoneValid = (p) => p === '' || /^5\d{7}$/.test(p);
 
+  // Mientras se escribe, solo se avisa si el número ya es imposible (no empieza
+  // por 5 o tiene más de 8 dígitos); si está incompleto, se avisa al salir del campo.
+  let phoneTouched = false;
+
   function updateSaldoBtn() {
     const phone = getPhone();
     const ok = phoneValid(phone);
-    setHint(el.saldoHint, ok ? '' : 'El número debe tener 8 dígitos y empezar por 5.');
+    const clearlyWrong = phone !== '' && (phone[0] !== '5' || phone.length > 8);
+    const showHint = !ok && (clearlyWrong || phoneTouched);
+    setHint(el.saldoHint, showHint ? 'El número debe tener 8 dígitos y empezar por 5.' : '');
     setBtn(el.whatsappSaldoBtn, selectedOffer && ok ? buildSaldoUrl(phone) : null);
   }
 
@@ -577,6 +583,11 @@
 
   el.cubaPhone.addEventListener('input', () => {
     el.cubaPhone.value = el.cubaPhone.value.replace(/[^\d ]/g, '');
+    phoneTouched = false;
+    updateSaldoBtn();
+  });
+  el.cubaPhone.addEventListener('blur', () => {
+    phoneTouched = getPhone() !== '';
     updateSaldoBtn();
   });
   el.whatsappSaldoBtn.addEventListener('click', (e) => {
