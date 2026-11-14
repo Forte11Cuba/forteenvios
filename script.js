@@ -60,6 +60,7 @@
     whatsappBtn:     document.getElementById('whatsappBtn'),
     whatsappSaldoBtn:document.getElementById('whatsappSaldoBtn'),
     saldoHint:       document.getElementById('saldoHint'),
+    promoNote:       document.getElementById('promoNote'),
     cubaPhone:       document.getElementById('cubaPhone'),
     year:            document.getElementById('year'),
     tabs:            document.querySelectorAll('.tab'),
@@ -561,6 +562,7 @@
     btn.addEventListener('click', () => {
       el.offers.forEach(b => b.classList.toggle('selected', b === btn));
       selectedOffer = { cup: btn.dataset.cup, usd: btn.dataset.usd, promo: btn.dataset.promo === '1' };
+      el.promoNote.hidden = !selectedOffer.promo;
       updateSaldoBtn();
     });
   });

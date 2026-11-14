@@ -638,13 +638,38 @@ a:hover { text-decoration: underline; }
   background: var(--navy);
   box-shadow: 0 2px 6px rgba(30, 58, 95, 0.35);
 }
+/* Nube aclaratoria de la promo: aparece al elegir la opción */
 .offer-note {
-  margin: 0 0 12px;
-  font-size: 0.78rem;
+  position: relative;
+  margin: 4px 0 14px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
   line-height: 1.45;
-  color: var(--text-soft);
+  color: var(--text);
+  background: #eef4fb;
+  border: 1px solid #c9daef;
+  border-radius: 10px;
+  animation: note-in .2s ease-out;
 }
+.offer-note::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: 28px;
+  width: 12px;
+  height: 12px;
+  background: #eef4fb;
+  border-left: 1px solid #c9daef;
+  border-top: 1px solid #c9daef;
+  transform: rotate(45deg);
+}
+.offer-note[hidden] { display: none; }
 .offer-note strong { color: var(--navy); }
+@keyframes note-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) { .offer-note { animation: none; } }
 
 
 /* ===== FAQ ===== */
