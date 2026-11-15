@@ -303,13 +303,7 @@ a:hover { text-decoration: underline; }
 }
 .summary-row.highlight span { color: var(--navy); font-weight: 600; }
 .summary-row.highlight strong { color: var(--navy); font-size: 1.05rem; transition: color .2s; }
-.summary-row.sub { padding-top: 2px; padding-bottom: 2px; font-size: 0.78rem; }
-.summary-row.sub strong { font-size: 0.84rem; font-weight: 600; color: var(--text-soft); }
 .summary-row strong { white-space: nowrap; }
-@media (max-width: 480px) {
-  .summary-row.sub { align-items: flex-start; gap: 10px; }
-  .summary-row.sub .wrap-mobile { display: block; }
-}
 @keyframes value-flash {
   0%   { background: rgba(37, 211, 102, 0); }
   30%  { background: rgba(37, 211, 102, 0.18); }
@@ -865,7 +859,11 @@ a:hover { text-decoration: underline; }
 }
 
 /* Municipio section */
-.municipio-section { flex: 1; min-width: 0; }
+/* Efectivo: toggle + provincia/municipio en una fila; en móvil los selects bajan a otra */
+.efectivo-options { flex-wrap: wrap; }
+.municipio-section { flex: 1 1 300px; min-width: 0; display: flex; gap: 8px; }
+#provinciaSelect { flex: 0 1 40%; }
+#municipioSelect { flex: 1 1 60%; }
 .municipio-label {
   position: absolute;
   width: 1px; height: 1px;
@@ -894,6 +892,8 @@ a:hover { text-decoration: underline; }
   box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.08);
 }
 .municipio-select option[value=""] { color: var(--text-soft); }
+.municipio-select:disabled { opacity: .55; cursor: not-allowed; }
+.ctoggle:disabled { opacity: .4; cursor: not-allowed; }
 
 /* FAQ list inside details */
 .faq ul {

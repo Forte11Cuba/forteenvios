@@ -5,14 +5,14 @@
   const COMMISSION_USD = 0.10;
   const TRANSFER_USD_FEE = 3;
   const MIN_SEND_USD = 1;
-  const USD_BILL = 5;
   const WHATSAPP_NUMBER = '50376528075';
   const RATE_ENDPOINT = 'https://api.yadio.io/rate/CUP/USD';
   const RATE_TTL_MS = 3 * 60 * 1000;
   const RATE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
   const RETRY_MS = 8 * 1000;
 
-  // Única fuente de precios de mensajería: llena el <select> y la lista del FAQ
+  // Única fuente de precios de mensajería: llena los <select> y la lista del FAQ.
+  // `soloUsd`: la provincia solo recibe efectivo en USD; `comisionUsd`: comisión propia del USD.
   const ENTREGA_EFECTIVO = [
     { provincia: 'La Habana', municipios: [
     ['Centro Habana', 5],
@@ -23,21 +23,18 @@
     ['Boyeros', 5],
     ['Diez de Octubre', 5],
     ['Marianao', 5],
-    ['Cerro', 6],
-    ['La Lisa', 6],
-    ['San Miguel del Padrón', 6],
-    ['Cotorro', 7],
-    ['Guanabacoa', 8],
+    ['Cerro', 5],
+    ['La Lisa', 5],
+    ['San Miguel del Padrón', 5],
+    ['Cotorro', 6],
+    ['Guanabacoa', 7],
     ['La Habana del Este', 7],
-    ['Regla', 7],
+    ['Regla', 6],
     ] },
-    { provincia: 'Las Tunas', nota: 'por ahora solo el municipio cabecera', municipios: [
+    { provincia: 'Las Tunas', nota: 'por ahora solo el municipio cabecera, solo en USD', soloUsd: true, comisionUsd: 0.15, municipios: [
       ['Las Tunas', 1],
     ] },
   ];
-
-  const MUNICIPIOS = ENTREGA_EFECTIVO.flatMap(({ provincia, municipios }) =>
-    municipios.map(([name, cost]) => ({ provincia, name, cost })));
 
   const el = {
     payUsd:          document.getElementById('payUsd'),
@@ -50,10 +47,6 @@
     sumFee:          document.getElementById('sumFee'),
     sumMensajeriaRow:document.getElementById('sumMensajeriaRow'),
     sumMensajeria:   document.getElementById('sumMensajeria'),
-    sumRecvUsdRow:   document.getElementById('sumRecvUsdRow'),
-    sumRecvUsd:      document.getElementById('sumRecvUsd'),
-    sumBillsRow:     document.getElementById('sumBillsRow'),
-    sumBills:        document.getElementById('sumBills'),
     sumRecvRow:      document.getElementById('sumRecvRow'),
     sumRecv:         document.getElementById('sumRecv'),
     envioHint:       document.getElementById('envioHint'),
@@ -70,6 +63,7 @@
     dtoggleBtns:        document.querySelectorAll('.dtoggle'),
     ctoggleBtns:        document.querySelectorAll('#efectivo-options .ctoggle'),
     transferCtoggleBtns:document.querySelectorAll('#transferencia-options .ctoggle'),
+    provinciaSelect:    document.getElementById('provinciaSelect'),
     municipioSelect:    document.getElementById('municipioSelect'),
     mensajeriaList:     document.getElementById('mensajeriaList'),
     efectivoOptions:    document.getElementById('efectivo-options'),
@@ -127,18 +121,9 @@
     });
   });
 
-  /* ===== Municipios ===== */
-  ENTREGA_EFECTIVO.forEach(({ provincia }) => {
-    const group = document.createElement('optgroup');
-    group.label = provincia;
-    MUNICIPIOS.forEach((m, i) => {
-      if (m.provincia !== provincia) return;
-      const opt = document.createElement('option');
-      opt.value = String(i);
-      opt.textContent = `${m.name} ($${m.cost})`;
-      group.appendChild(opt);
-    });
-    el.municipioSelect.appendChild(group);
+  /* ===== Provincias ===== */
+  ENTREGA_EFECTIVO.forEach(({ provincia }, i) => {
+    el.provinciaSelect.add(new Option(provincia, String(i)));
   });
 
   // FAQ: una entrada por provincia, con los municipios agrupados por precio
@@ -264,6 +249,7 @@
   let deliveryMode = 'transferencia'; // 'transferencia' | 'efectivo'
   let transferCurrency = 'cup';       // 'cup' | 'usd'
   let efectivoCurrency = 'cup';       // 'cup' | 'usd'
+  let selectedProvincia = null;       // entrada de ENTREGA_EFECTIVO o null
   let selectedMunicipio = null;       // { provincia, name, cost } or null
 
   // Campo que escribió el cliente por última vez; el otro se calcula a partir de él
@@ -274,8 +260,9 @@
   const isUsd = () => getCurrency() === 'usd';
 
   function getCommission() {
-    // Solo el efectivo en USD lleva 10%; el resto (incl. Clásica USD) va al 7%
-    return (deliveryMode === 'efectivo' && efectivoCurrency === 'usd') ? COMMISSION_USD : COMMISSION;
+    // Solo el efectivo en USD lleva 10% (o la de su provincia); el resto (incl. Clásica USD) va al 7%
+    if (deliveryMode !== 'efectivo' || efectivoCurrency !== 'usd') return COMMISSION;
+    return selectedProvincia?.comisionUsd ?? COMMISSION_USD;
   }
 
   // Costo fijo en USD que paga el remitente: mensajería (efectivo) o servicio (transferencia USD)
@@ -337,26 +324,52 @@
     }));
   });
 
-  /* ===== Municipio select ===== */
+  /* ===== Provincia / Municipio ===== */
+  function fillMunicipios() {
+    el.municipioSelect.length = 1;
+    el.municipioSelect.disabled = !selectedProvincia;
+    if (!selectedProvincia) return;
+    selectedProvincia.municipios.forEach(([name, cost], i) => {
+      el.municipioSelect.add(new Option(`${name} ($${cost})`, String(i)));
+    });
+    // Con un solo municipio no hace falta que el cliente lo elija
+    if (selectedProvincia.municipios.length === 1) el.municipioSelect.value = '0';
+  }
+
+  function readMunicipio() {
+    const m = selectedProvincia?.municipios[el.municipioSelect.value];
+    selectedMunicipio = m ? { provincia: selectedProvincia.provincia, name: m[0], cost: m[1] } : null;
+  }
+
+  // Provincias que solo reciben USD: se fuerza USD y se desactiva CUP
+  function syncEfectivoCurrency() {
+    const soloUsd = !!selectedProvincia?.soloUsd;
+    el.ctoggleBtns.forEach(b => { b.disabled = soloUsd && b.dataset.currency === 'cup'; });
+    if (soloUsd && efectivoCurrency !== 'usd') {
+      efectivoCurrency = 'usd';
+      setPressed(el.ctoggleBtns, [...el.ctoggleBtns].find(b => b.dataset.currency === 'usd'));
+    }
+  }
+
+  el.provinciaSelect.addEventListener('change', () => changeState(() => {
+    selectedProvincia = ENTREGA_EFECTIVO[el.provinciaSelect.value] || null;
+    fillMunicipios();
+    readMunicipio();
+    syncEfectivoCurrency();
+  }));
+
   el.municipioSelect.addEventListener('change', () => {
-    selectedMunicipio = MUNICIPIOS[el.municipioSelect.value] || null;
+    readMunicipio();
     recompute();
   });
 
   /* ===== Summary ===== */
   let lastRecvValue = 0;
 
-  // Billetes de $5 y el sobrante en CUP (ver FAQ)
-  function splitBills(netUsd) {
-    const bills = Math.floor((netUsd + 1e-6) / USD_BILL) * USD_BILL;
-    const rest = Math.max(Math.round((netUsd - bills) * 100) / 100, 0);
-    return { bills, rest };
-  }
-
   function getHint(calc) {
     const { pay, fixed, net } = calc;
     if (pay <= 0) return '';
-    if (deliveryMode === 'efectivo' && !selectedMunicipio) return 'Elige el municipio de entrega para continuar.';
+    if (deliveryMode === 'efectivo' && !selectedMunicipio) return (selectedProvincia ? 'Elige el municipio de entrega para continuar.' : 'Elige la provincia y el municipio de entrega para continuar.');
     if (fixed > 0 && pay <= fixed) {
       const what = deliveryMode === 'efectivo' ? 'la mensajería' : 'el costo de servicio';
       return `El monto no alcanza para cubrir ${what} ($${fmtUsd(fixed)} USD).`;
@@ -366,7 +379,7 @@
   }
 
   function updateSummary(calc) {
-    const { pay, fee, fixed, net, recv } = calc;
+    const { pay, fee, fixed, recv } = calc;
     const usdMode = isUsd();
 
     el.sumPay.textContent = `$${fmtUsd(pay)} USD`;
@@ -385,17 +398,7 @@
       el.sumMensajeriaRow.style.display = 'none';
     }
 
-    if (usdMode) {
-      el.sumRecvUsd.textContent = recv > 0 ? `≈ ${fmtCup(recv * rate)} CUP` : '≈ 0 CUP';
-      el.sumRecv.textContent = `$${fmtUsd(recv)} USD`;
-    } else {
-      el.sumRecvUsd.textContent = net > 0 ? `≈ $${fmtUsd(net)} USD` : '≈ $0.00 USD';
-      el.sumRecv.textContent = `${fmtCup(recv)} CUP`;
-    }
-
-    const showBills = deliveryMode === 'efectivo' && efectivoCurrency === 'usd' && recv > 0;
-    el.sumBillsRow.style.display = showBills ? '' : 'none';
-    if (showBills) el.sumBills.textContent = billsText(recv);
+    el.sumRecv.textContent = usdMode ? `$${fmtUsd(recv)} USD` : `${fmtCup(recv)} CUP`;
 
     const flashKey = usdMode ? Math.round(recv * 100) : Math.round(recv);
     if (recv > 0 && flashKey !== lastRecvValue) {
@@ -410,13 +413,6 @@
 
     const canSend = rateOk && recv > 0 && !hint;
     setBtn(el.whatsappBtn, canSend ? buildEnvioUrl(calc) : null);
-  }
-
-  function billsText(netUsd) {
-    const { bills, rest } = splitBills(netUsd);
-    if (rest <= 0) return `$${bills} USD en billetes`;
-    const restCup = `≈ ${fmtCup(rest * rate)} CUP`;
-    return bills > 0 ? `$${bills} USD + ${restCup}` : `${restCup} (menos de $${USD_BILL})`;
   }
 
   function buildEnvioUrl({ pay, fee, fixed, net, recv }) {
@@ -443,7 +439,7 @@
       lines.push(`Modalidad: Efectivo en USD en ${selectedMunicipio.provincia}.`);
       lines.push(`Municipio: ${selectedMunicipio.name} (mensajería $${fmtUsd(fixed)} USD).`);
       lines.push(`Yo entrego en El Salvador: $${fmtUsd(pay)} USD total (comisión $${fmtUsd(fee)} – ${pct}%, mensajería $${fmtUsd(fixed)}).`);
-      lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en efectivo (${billsText(recv)}).`);
+      lines.push(`Mi familiar recibe: $${fmtUsd(recv)} USD en billetes.`);
     }
 
     lines.push('', '¿Podemos coordinar?');
