@@ -147,8 +147,12 @@
               <button type="button" class="ctoggle" aria-pressed="false" data-currency="usd">USD</button>
             </div>
             <div class="municipio-section">
+              <label for="provinciaSelect" class="municipio-label">Provincia de entrega</label>
+              <select id="provinciaSelect" class="municipio-select">
+                <option value="">Provincia</option>
+              </select>
               <label for="municipioSelect" class="municipio-label">Municipio de entrega</label>
-              <select id="municipioSelect" class="municipio-select">
+              <select id="municipioSelect" class="municipio-select" disabled>
                 <option value="">Municipio</option>
               </select>
             </div>
@@ -186,14 +190,6 @@
             <div class="summary-row" id="sumMensajeriaRow" style="display:none">
               <span id="sumMensajeriaLabel">Mensajería</span>
               <strong id="sumMensajeria">$0.00 USD</strong>
-            </div>
-            <div class="summary-row sub" id="sumRecvUsdRow">
-              <span>Monto equivalente <span class="wrap-mobile">a recibir en Cuba</span></span>
-              <strong id="sumRecvUsd">≈ $0.00 USD</strong>
-            </div>
-            <div class="summary-row sub" id="sumBillsRow" style="display:none">
-              <span>Entrega en efectivo</span>
-              <strong id="sumBills"></strong>
             </div>
             <div class="summary-row highlight" id="sumRecvRow">
               <span id="sumRecvLabel">Recibes en Cuba</span>
@@ -373,15 +369,14 @@
 
             <details>
               <summary>¿Entregan en efectivo en Cuba?</summary>
-              <p>Sí, en <strong>La Habana</strong> y en <strong>Las Tunas</strong> (por ahora, solo en el municipio cabecera). El efectivo se entrega en <strong>CUP</strong> (comisión 7%) o en <strong>USD</strong> (comisión 10%). Además se cobra una <strong>tarifa de mensajería</strong> según el municipio:</p>
+              <p>Sí, en <strong>La Habana</strong> y en <strong>Las Tunas</strong> (por ahora, solo en el municipio cabecera). En La Habana el efectivo se entrega en <strong>CUP</strong> (comisión 7%) o en <strong>USD</strong> (comisión 10%); en Las Tunas, solo en <strong>USD</strong> (comisión 15%). Además se cobra una <strong>tarifa de mensajería</strong> según el municipio:</p>
               <ul id="mensajeriaList"></ul>
               <p>Puedes calcular el costo total en la calculadora seleccionando <strong>"Efectivo a domicilio"</strong>. Para <strong>otras provincias</strong>, escríbenos por WhatsApp y lo coordinamos.</p>
             </details>
 
             <details>
               <summary>¿Qué pasa si el monto en USD no es un número exacto?</summary>
-              <p>Siempre intentamos entregar la mayor cantidad posible en <strong>billetes USD</strong>. Sin embargo, los billetes tienen denominaciones fijas, por lo que si el monto a entregar no es múltiplo exacto de <strong>$5 USD</strong>, el sobrante se entrega en <strong>CUP al cambio vigente en el momento de la entrega</strong>.</p>
-              <p>Por ejemplo: si corresponden <strong>$11.50 USD</strong>, se entregará <strong>$10 USD en efectivo</strong> y el equivalente de <strong>$1.50 USD en CUP</strong> según la tasa del día. Así tu familiar recibe el 100% del valor, sin perder nada.</p>
+              <p>El efectivo en USD se entrega en <strong>billetes</strong>, por eso lo ideal es que el monto a recibir sea <strong>múltiplo de $5 USD</strong> ($50, $95, $100…). Si no lo es, lo coordinamos contigo por WhatsApp antes del envío.</p>
             </details>
 
             <details>
