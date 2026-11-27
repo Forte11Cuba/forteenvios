@@ -625,6 +625,7 @@ a:hover { text-decoration: underline; }
   text-align: left;
 }
 .offer-cup small { font-size: 0.7rem; font-weight: 700; color: var(--gray); margin-left: 4px; }
+.offer:not([data-promo]) .offer-cup { white-space: nowrap; }
 .offer-arrow {
   color: var(--navy);
   font-size: 1.25rem;
