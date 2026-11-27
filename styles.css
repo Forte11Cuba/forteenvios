@@ -951,7 +951,8 @@ a:hover { text-decoration: underline; }
 @media (min-width: 960px) {
   .hero h1 { font-size: 2.4rem; }
   .card { padding: 32px 32px; }
-  .offers { grid-template-columns: repeat(4, 1fr); }
+  /* 3 columnas: con 4 no caben cantidad, unidad y precio en una línea */
+  .offers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 /* ===== Navbar ===== */
