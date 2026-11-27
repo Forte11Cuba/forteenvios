@@ -517,7 +517,7 @@
     if (!document.hidden && (Date.now() - rateTimestamp) > RATE_TTL_MS) fetchRate();
   });
 
-  /* ===== Saldo móvil ===== */
+  /* ===== Recargas: saldo móvil y Nauta Plus ===== */
   let selectedOffer = null;
 
   // Móviles cubanos: 8 dígitos (los antiguos empiezan por 5, los nuevos por 63)
@@ -538,8 +538,18 @@
   }
 
   function buildSaldoUrl(phone) {
-    const { cup, usd, promo } = selectedOffer;
+    const { cup, usd, promo, nauta } = selectedOffer;
     const numero = phone ? `Número a recargar: +53 ${phone}` : 'Número a recargar: te lo paso por aquí.';
+    if (nauta) {
+      return waUrl([
+        'Hola Forte, quiero una recarga Nauta Plus para Cuba.',
+        '',
+        `Plan: ${nauta} días de internet ilimitado por $${fmtUsd(parseFloat(usd))} USD.`,
+        numero,
+        '',
+        '¿Podemos coordinar?',
+      ]);
+    }
     if (promo) {
       return waUrl([
         'Hola Forte, quiero la recarga en promoción de ETECSA.',
@@ -563,7 +573,12 @@
   el.offers.forEach(btn => {
     btn.addEventListener('click', () => {
       el.offers.forEach(b => b.classList.toggle('selected', b === btn));
-      selectedOffer = { cup: btn.dataset.cup, usd: btn.dataset.usd, promo: btn.dataset.promo === '1' };
+      selectedOffer = {
+        cup: btn.dataset.cup,
+        usd: btn.dataset.usd,
+        promo: btn.dataset.promo === '1',
+        nauta: btn.dataset.nauta,
+      };
       el.promoNote.hidden = !selectedOffer.promo;
       updateSaldoBtn();
     });

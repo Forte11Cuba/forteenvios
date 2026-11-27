@@ -1,7 +1,7 @@
 {
   "name": "Forte Envíos · El Salvador → Cuba",
   "short_name": "Forte Envíos",
-  "description": "Envía dinero y recargas de saldo desde El Salvador a Cuba. Calcula tu envío al instante.",
+  "description": "Envía dinero y recargas de saldo móvil y Nauta Plus desde El Salvador a Cuba. Calcula tu envío al instante.",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

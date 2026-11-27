@@ -561,6 +561,16 @@ a:hover { text-decoration: underline; }
   font-size: 0.86rem;
   line-height: 1.35;
 }
+.offers-title {
+  margin: 4px 0 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.offers + .offers-title { margin-top: 18px; }
+.offers-title small { font-size: inherit; font-weight: 600; text-transform: none; letter-spacing: 0; }
 .offers {
   display: grid;
   gap: 8px;
